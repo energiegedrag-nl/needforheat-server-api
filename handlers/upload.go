@@ -39,6 +39,14 @@ func (h *UploadHandler) Create(w http.ResponseWriter, r *http.Request) error {
 		return NewHandlerError(err, "wrong token kind", http.StatusForbidden).WithMessage("wrong token kind was used")
 	}
 
+	// A device can only upload for itself. Its ID comes from the token, not from the request:
+	// the device firmware (generic firmware v3.x and v4) does not send instance_id/instance_type,
+	// and a client-supplied instance_id must not let one device write into another one.
+	if auth.IsKind(authorization.DeviceToken) {
+		request.InstanceID = auth.ID
+		request.InstanceType = upload.Device
+	}
+
 	upload, err := h.service.Create(request.InstanceID, request.InstanceType, request.DeviceTime, request.Measurements)
 	if err != nil {
 		if errors.Is(err, services.ErrEmptyUpload) {
