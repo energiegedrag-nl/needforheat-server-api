@@ -1,7 +1,7 @@
-FROM --platform=$BUILDPLATFORM golang:1.22 as build
+FROM --platform=$BUILDPLATFORM golang:1.27 AS build
 
-ARG GOOS=$TARGETOS
-ARG GOARCH=$TARGETARCH
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /go/src/needforheat-server-api
 
@@ -14,9 +14,9 @@ RUN go mod download
 
 # Build binary.
 COPY . .
-RUN CGO_ENABLED=0 go build -o /go/bin/needforheat-server-api .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /go/bin/needforheat-server-api .
 
-FROM gcr.io/distroless/static-debian11
+FROM gcr.io/distroless/static-debian13:nonroot
 
 # Copy /data folder with correct permissions.
 COPY --from=build --chown=nonroot /data /data
