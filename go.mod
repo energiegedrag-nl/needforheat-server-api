@@ -1,6 +1,6 @@
 module github.com/energietransitie/needforheat-server-api
 
-go 1.22
+go 1.26.0
 
 require (
 	github.com/glebarez/sqlite v1.11.0
@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.23.0
 	golang.org/x/oauth2 v0.20.0
-	golang.org/x/sync v0.7.0
+	golang.org/x/sync v0.24.0
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/gorm v1.25.10
 )
