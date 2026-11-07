@@ -1,6 +1,6 @@
 module github.com/energietransitie/needforheat-server-api
 
-go 1.22
+go 1.23
 
 require (
 	github.com/glebarez/sqlite v1.11.0
@@ -8,7 +8,7 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/sigurn/crc16 v0.0.0-20240131213347-83fcde1e29d1
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.23.0
 	golang.org/x/oauth2 v0.20.0
