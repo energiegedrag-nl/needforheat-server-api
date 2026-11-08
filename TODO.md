@@ -1,20 +1,20 @@
 # TODO – needforheat-server-api
 
-Open work for this repository, distilled from the old NeedForHeat Trello board (paraphrased and regrouped) and from the 2026 maintenance review.
+Open work for this repository, distilled from the old NeedForHeat Trello board, including the discussions on the cards (paraphrased and regrouped) and from the 2026 maintenance review.
 
 Items that touch several repositories are written out in full in one *lead* repository; the others list them with a link (→). Keep the details up to date in the lead repository only.
 
 ## Now: needed to run at home this winter
 
-- [ ] <a id="down"></a>**Verify the server stays up under real load.** The production server occasionally went down. The missing indexes are fixed (#13); after deployment, watch memory, slow queries and restarts for a few weeks and add basic health monitoring. Also affects: needforheat-server-configuration. *(Trello #1155)*
+- [ ] <a id="down"></a>**Verify the server stays up under real load.** The production server occasionally went down. The missing indexes are fixed (#13); after deployment, watch memory, slow queries and restarts for a few weeks and add basic health monitoring. Earlier outages (May and June 2024) needed a manual reset by the hosting party; memory looked fine afterwards. Analysis queries took up to 30 minutes, which points at missing indexes as well. Also affects: needforheat-server-configuration. *(Trello #1155)*
 - [ ] → Persistent buffering for at least 24 hours — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#buffer) *(Trello #25, #494)*
 - [ ] → Back up the NeedForHeat database — see [needforheat-server-configuration](https://github.com/energiegedrag-nl/needforheat-server-configuration/blob/main/TODO.md#backup) *(Trello #654, #1159)*
 
 ## Soon: robustness and correctness
 
 - [ ] <a id="admindocs"></a>**Document admin, app, campaign and account creation.** Move the curl runbook for creating admins, apps, device types, campaigns and accounts (deployment repo, `docs/21`) into this repository. *(Trello #700, #701)*
-- [ ] <a id="reuse"></a>**Re-use devices and update a changed proof of possession.** A device can belong to only one building forever, which blocks re-use and causes 'device already registered to another account'. Allow detaching a device, and let the app update the stored proof of possession when the QR code shows a new one. Also affects: needforheat-gearup-app. *(Trello #671, #836, #959)*
-- [ ] <a id="tokens"></a>**Token lifetimes and abuse protection.** Decide and implement lifetimes for account activation, account, device activation and device tokens. Account numbers are sequential; rate-limit activation attempts so they cannot be guessed or flooded. *(Trello #717, #1003)*
+- [ ] <a id="reuse"></a>**Re-use devices and update a changed proof of possession.** A device can belong to only one building forever, which blocks re-use and causes 'device already registered to another account'. Allow detaching a device, and let the app update the stored proof of possession when the QR code shows a new one. Careful: the proof-of-possession check was introduced so a device cannot be registered elsewhere without the researcher's approval. Write down which risks it covers before relaxing it, and weigh that against re-provisioning without manual database edits. A suggestion from the team: allow activation by another account if it is for another campaign. The 'already registered' error in the pre-test was probably not a QR reading error. Also affects: needforheat-gearup-app. *(Trello #671, #836, #959)*
+- [ ] <a id="tokens"></a>**Token lifetimes and abuse protection.** Decide and implement lifetimes for account activation, account, device activation and device tokens. Account numbers are sequential; rate-limit activation attempts so they cannot be guessed or flooded. Earlier proposal: account activation token 2 weeks (researchers can issue a fresh one), account session token 13 months, device session token 13 months (longest study about a year); the device's proof of possession never leaves the device. *(Trello #717, #1003)*
 - [ ] → Make OTA updates trustworthy and staged — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#ota) *(Trello #347, #770)*
 - [ ] → Log clock skew after every NTP sync — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#skew) *(Trello #471)*
 - [ ] → Clear behaviour without internet or server — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#offline) *(Trello #748, #1037)*
@@ -23,9 +23,9 @@ Items that touch several repositories are written out in full in one *lead* repo
 ## Later: features and ideas
 
 - [ ] <a id="apivalidate"></a>**Reject apps with an empty name.** *(Trello #662)*
-- [ ] <a id="apidocs"></a>**API and provisioning documentation.** Publish OpenAPI documentation for v3 and turn the provisioning slides (PDF) into Markdown/MkDocs. Also affects: needforheat-generic-firmware. *(Trello #623, #628, #476)*
+- [ ] <a id="apidocs"></a>**API and provisioning documentation.** Turn the provisioning slides (PDF) into Markdown/MkDocs and check the OpenAPI description against API v3. OpenAPI docs already exist at `/docs` (served by the API); what is missing is up-to-date provisioning documentation. Key design rule: only the domain is fixed at build time, everything else reaches app and device at run time. Also affects: needforheat-generic-firmware. *(Trello #623, #628, #476)*
 - [ ] <a id="bt"></a>**Register phones for presence detection.** Let the app read the phone's static Bluetooth address and store it per account under a random ID; let presence detectors fetch the list instead of configuring it by hand. Also affects: needforheat-gearup-app, needforheat-presence-detector-firmware, needforheat-living-room-module-firmware. *(Trello #104, #117, #863, #576)*
-- [ ] <a id="cloud"></a>**More cloud data sources.** Support Toon, Netatmo (Healthy Home Coach CO2) and Google Nest via OAuth2; let the app revoke a grant. Enelogic: treat month, day and interval data separately and test re-granting after an expired refresh token. Also affects: needforheat-gearup-app. *(Trello #950, #951, #952, #32, #55, #40, #1049, #973)*
+- [ ] <a id="cloud"></a>**More cloud data sources.** Support Toon, Netatmo (Healthy Home Coach CO2) and Google Nest via OAuth2; let the app revoke a grant. Enelogic: treat month, day and interval data separately and test re-granting after an expired refresh token. Enelogic: a refresh token that is not used for about a month can no longer be refreshed; the user must grant access again. Also affects: needforheat-gearup-app. *(Trello #950, #951, #952, #32, #55, #40, #1049, #973)*
 - [ ] <a id="cockpit"></a>**NeedForHeat Cockpit (web portal).** Web portal for researchers: campaigns, accounts, invitations, data-flow monitoring, browser-based firmware flashing. Design: `docs/22` in the deployment repo. Related: server-side clock-skew correction from device vs server upload time, KNMI 10-minute weather data, verifiable deletion requests, pseudonymous participant login, EU Data Act obligations. *(Trello #966, #716, #1063, #1211, #1232, #1235, #1231)*
 - [ ] → Default and server-provided info link on the screen — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#infourl) *(Trello #470, #835)*
 - [ ] → Spread uploads and make them smaller — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#upload) *(Trello #497, #659)*
@@ -34,6 +34,7 @@ Items that touch several repositories are written out in full in one *lead* repo
 - [ ] → CONTRIBUTING.md with the branching workflow — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#contrib) *(Trello #394, #1032)*
 - [ ] → Compact provisioning QR code (NFH:// deep link) — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#qr) *(Trello #711, #709)*
 - [ ] → Log in with an external identity (OpenID Connect pairwise) — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#social) *(Trello #650)*
+- [ ] → Building profile energy query with external APIs — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#buildingprofile) *(Trello #690)*
 
 ## Recently done
 
