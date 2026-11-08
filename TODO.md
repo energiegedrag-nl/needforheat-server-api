@@ -19,6 +19,7 @@ Items that touch several repositories are written out in full in one *lead* repo
 - [ ] → Log clock skew after every NTP sync — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#skew) *(Trello #471)*
 - [ ] → Clear behaviour without internet or server — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#offline) *(Trello #748, #1037)*
 - [ ] → Finish data-flow monitoring per source — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#monitor) *(Trello #1041, #1096, #1042, #1119, #1117, #1040)*
+- [ ] → EP-online without handing the key to participants — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#eponline)
 
 ## Later: features and ideas
 
