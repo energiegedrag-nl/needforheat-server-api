@@ -11,9 +11,9 @@ import (
 // Database representation of a [measurement.Measurement]
 type MeasurementModel struct {
 	gorm.Model
-	PropertyModelID uint `gorm:"column:property_id"`
+	PropertyModelID uint `gorm:"column:property_id;index:idx_measurement_upload_property,priority:2"`
 	Property        PropertyModel
-	UploadModelID   uint `gorm:"column:upload_id"`
+	UploadModelID   uint `gorm:"column:upload_id;index:idx_measurement_upload_property,priority:1"`
 	Time            time.Time
 	Value           string
 }

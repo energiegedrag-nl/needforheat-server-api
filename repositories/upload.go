@@ -22,9 +22,10 @@ func NewUploadRepository(db *gorm.DB) *UploadRepository {
 // Database representation of a [upload.Upload]
 type UploadModel struct {
 	gorm.Model
-	InstanceID   uint                `gorm:"column:instance_id"`
-	InstanceType upload.InstanceType `gorm:"default:device"`
-	ServerTime   needforheat.Time
+	// Composite index for "uploads of this device/energy query, newest first" (app status checks).
+	InstanceID   uint                `gorm:"column:instance_id;index:idx_upload_instance,priority:2"`
+	InstanceType upload.InstanceType `gorm:"size:32;default:device;index:idx_upload_instance,priority:1"`
+	ServerTime   needforheat.Time    `gorm:"index:idx_upload_instance,priority:3"`
 	DeviceTime   needforheat.Time
 	Size         int
 	Measurements []MeasurementModel
@@ -115,11 +116,11 @@ func (r *UploadRepository) GetLatestUploadForDeviceWithID(id uint) (upload.Uploa
 	heartbeatOnlySubquery := r.db.
 		Table("upload").
 		Select("id").
-		Where("instance_id = ? AND size = (SELECT COUNT(*) FROM measurement WHERE upload_id = upload.id AND property_id = (SELECT id FROM property WHERE name = 'heartbeat'))", id)
+		Where("instance_type = ? AND instance_id = ? AND size = (SELECT COUNT(*) FROM measurement WHERE upload_id = upload.id AND property_id = (SELECT id FROM property WHERE name = 'heartbeat'))", upload.Device, id)
 
 	// Main query to fetch the latest upload model excluding those with only 'heartbeat' property measurements
 	err := r.db.
-		Where("instance_id = ? AND id NOT IN (?)", id, heartbeatOnlySubquery).
+		Where("instance_type = ? AND instance_id = ? AND id NOT IN (?)", upload.Device, id, heartbeatOnlySubquery).
 		Order("server_time desc").
 		First(&uploadModel).Error
 
