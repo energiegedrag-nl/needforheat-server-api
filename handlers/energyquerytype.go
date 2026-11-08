@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
@@ -29,8 +30,11 @@ func (h *EnergyQueryTypeHandler) Create(w http.ResponseWriter, r *http.Request) 
 		return NewHandlerError(err, "bad request", http.StatusBadRequest).WithLevel(logrus.ErrorLevel)
 	}
 
-	dt, err := h.service.Create(request.EnergyQueryVariety, request.Formula)
+	dt, err := h.service.Create(request.EnergyQueryVariety, request.Formula, request.Rounding)
 	if err != nil {
+		if errors.Is(err, energyquerytype.ErrInvalidRounding) {
+			return NewHandlerError(err, err.Error(), http.StatusBadRequest)
+		}
 		if helpers.IsMySQLDuplicateError(err) {
 			return NewHandlerError(err, "duplicate", http.StatusBadRequest)
 		}

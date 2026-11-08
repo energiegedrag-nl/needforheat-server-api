@@ -1010,6 +1010,10 @@ components:
         formula:
           type: string
           example: x+y
+        rounding:
+          type: string
+          description: Rounding rules per property (JSON), applied by the app before upload. A rule has either a step (with optional min and max that clamp the tails) or bins (each with an exclusive upper bound lt and a representative value; the last bin has no lt).
+          example: '{"heat_tr_building_cond__W_K_1":{"step":25,"min":50,"max":600},"aperture_inf__cm2":{"bins":[{"lt":50,"value":25},{"lt":150,"value":100},{"value":200}]}}'
 
     AccountCreated:
       type: object

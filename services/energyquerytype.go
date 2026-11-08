@@ -35,8 +35,11 @@ func NewEnergyQueryTypeService(repository energyquerytype.EnergyQueryTypeReposit
 	return EnergyQueryTypeService
 }
 
-func (s *EnergyQueryTypeService) Create(variety string, formula string) (energyquerytype.EnergyQueryType, error) {
-	EnergyQueryType := energyquerytype.MakeEnergyQueryType(variety, formula)
+func (s *EnergyQueryTypeService) Create(variety string, formula string, rounding string) (energyquerytype.EnergyQueryType, error) {
+	if err := energyquerytype.ValidateRounding(rounding); err != nil {
+		return energyquerytype.EnergyQueryType{}, err
+	}
+	EnergyQueryType := energyquerytype.MakeEnergyQueryType(variety, formula, rounding)
 
 	EnergyQueryType, err := s.repository.Create(EnergyQueryType)
 	if err != nil {
