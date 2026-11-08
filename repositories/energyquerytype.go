@@ -21,6 +21,7 @@ type EnergyQueryTypeModel struct {
 	gorm.Model
 	Name            string `gorm:"column:energy_query_variety"`
 	Formula         string
+	Rounding        string                `gorm:"type:text"`
 	DataSourceTypes []DataSourceTypeModel `gorm:"polymorphic:TypeInstance;"`
 }
 
@@ -32,9 +33,10 @@ func (EnergyQueryTypeModel) TableName() string {
 // Create a EnergyQueryTypeModel from a [EnergyQueryType.EnergyQueryType].
 func MakeEnergyQueryTypeModel(energyQueryType energyquerytype.EnergyQueryType) EnergyQueryTypeModel {
 	return EnergyQueryTypeModel{
-		Model:   gorm.Model{ID: energyQueryType.ID},
-		Name:    energyQueryType.EnergyQueryVariety,
-		Formula: energyQueryType.Formula,
+		Model:    gorm.Model{ID: energyQueryType.ID},
+		Name:     energyQueryType.EnergyQueryVariety,
+		Formula:  energyQueryType.Formula,
+		Rounding: energyQueryType.Rounding,
 	}
 }
 
@@ -44,6 +46,7 @@ func (m *EnergyQueryTypeModel) fromModel() energyquerytype.EnergyQueryType {
 		ID:                 m.Model.ID,
 		EnergyQueryVariety: m.Name,
 		Formula:            m.Formula,
+		Rounding:           m.Rounding,
 	}
 }
 
