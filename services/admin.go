@@ -3,8 +3,8 @@ package services
 import (
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/admin"
-	"github.com/energietransitie/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/admin"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
 )
 
 type AdminService struct {

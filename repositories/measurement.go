@@ -3,8 +3,8 @@ package repositories
 import (
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
 	"gorm.io/gorm"
 )
 

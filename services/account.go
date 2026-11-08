@@ -8,13 +8,13 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/internal/helpers"
-	"github.com/energietransitie/needforheat-server-api/needforheat/account"
-	"github.com/energietransitie/needforheat-server-api/needforheat/authorization"
-	"github.com/energietransitie/needforheat-server-api/needforheat/campaign"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeed"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeedstatus"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeedtype"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/account"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/campaign"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeed"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeedstatus"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeedtype"
 	"github.com/sirupsen/logrus"
 )
 

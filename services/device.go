@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/authorization"
-	"github.com/energietransitie/needforheat-server-api/needforheat/device"
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
-	"github.com/energietransitie/needforheat-server-api/needforheat/property"
-	"github.com/energietransitie/needforheat-server-api/needforheat/upload"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/device"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/property"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
 )
 
 var (

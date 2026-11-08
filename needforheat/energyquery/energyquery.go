@@ -3,9 +3,9 @@ package energyquery
 import (
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquerytype"
-	"github.com/energietransitie/needforheat-server-api/needforheat/upload"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquerytype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
 )
 
 // An EnergyQuery is collects measurements in a subject's account.

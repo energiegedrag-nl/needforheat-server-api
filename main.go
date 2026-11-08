@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/energietransitie/needforheat-server-api/cmd"
+	"github.com/energiegedrag-nl/needforheat-server-api/cmd"
 )
 
 func main() {

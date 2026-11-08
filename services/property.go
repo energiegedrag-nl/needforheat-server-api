@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat/property"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/property"
 )
 
 type PropertyService struct {

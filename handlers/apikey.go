@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/apikey"
-	"github.com/energietransitie/needforheat-server-api/services"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/apikey"
+	"github.com/energiegedrag-nl/needforheat-server-api/services"
 	"github.com/go-chi/chi/v5"
 )
 

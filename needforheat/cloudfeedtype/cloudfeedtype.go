@@ -1,6 +1,6 @@
 package cloudfeedtype
 
-import "github.com/energietransitie/needforheat-server-api/needforheat/cloudfeed"
+import "github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeed"
 
 // A CloudFeedType is an external online data source.
 type CloudFeedType struct {

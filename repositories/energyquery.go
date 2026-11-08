@@ -1,11 +1,11 @@
 package repositories
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquery"
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
-	"github.com/energietransitie/needforheat-server-api/needforheat/property"
-	"github.com/energietransitie/needforheat-server-api/needforheat/upload"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquery"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/property"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
 	"gorm.io/gorm"
 )
 

@@ -1,9 +1,9 @@
 package campaign
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/app"
-	"github.com/energietransitie/needforheat-server-api/needforheat/datasourcelist"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/app"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/datasourcelist"
 )
 
 // A campaign is a timeframe where we gather measurements with a specific goal.

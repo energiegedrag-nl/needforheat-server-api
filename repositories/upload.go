@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
-	"github.com/energietransitie/needforheat-server-api/needforheat/upload"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )

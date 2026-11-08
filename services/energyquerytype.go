@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquerytype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquerytype"
 	"github.com/sigurn/crc16"
 	"github.com/sirupsen/logrus"
 )

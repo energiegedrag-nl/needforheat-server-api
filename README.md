@@ -4,6 +4,8 @@
 
 API for NeedForHeat data collection platform to enable research.
 
+> **Own deployment.** This repository is maintained by [energiegedrag-nl](https://github.com/energiegedrag-nl) and deployed under `energiegedrag.nl`. To run your own instance, replace `energiegedrag-nl` by your GitHub organisation and `energiegedrag.nl` by your domain (hosts used: `api.<domain>`, `manuals.<domain>`), consistently in configuration and build settings.
+
 ## Table of contents
 - [Deploying](#deploying)
 - [Developing](#developing)
@@ -14,15 +16,15 @@ API for NeedForHeat data collection platform to enable research.
 
 ## Deploying
 For our process to deploy the API to our public server, or update it, see these links:
-- Deploy: https://github.com/energietransitie/needforheat-server-configuration#api
-- Update: https://github.com/energietransitie/needforheat-server-configuration#updating
+- Deploy: https://github.com/energiegedrag-nl/needforheat-server-configuration#api
+- Update: https://github.com/energiegedrag-nl/needforheat-server-configuration#updating
 
 ### Prerequisites
 The NeedForHeat API is available as a Docker image.
 You will need to [install Docker](https://docs.docker.com/engine/install/) to run it.
 
 ### Images
-See all [available images](https://github.com/energietransitie/needforheat-server-api/pkgs/container/needforheat-server-api):
+See all [available images](https://github.com/energiegedrag-nl/needforheat-server-api/pkgs/container/needforheat-server-api):
 - Use the `latest` tag to get the latest stable release built from a tagged GitHub release. 
 - Use the `main` tag to get the latest development release, built directly from the `main` branch.
 
@@ -169,15 +171,14 @@ If you use this repository in your research or work, please cite the following p
 **Note:** This is a pre-print submitted on 8 Sep 2025 and has not yet been peer-reviewed. For the full paper, see [https://arxiv.org/abs/2509.06927](https://arxiv.org/abs/2509.06927).
 
 ## Credits
-This software is created by:
-- Nick van Ravenzwaaij · [@n-vr](https://github.com/n-vr)
+Author:
+* Henri ter Hofte · [@henriterhofte](https://github.com/henriterhofte)
 
-Thanks also go to:
-- Arjan peddemors · [@arpe](https://github.com/arpe)
-- Harris Mesic · [@labhatorian](https://github.com/Labhatorian)
-
-Product owner:
-- Henri ter Hofte · [@henriterhofte](https://github.com/henriterhofte)
+This repository continues [energietransitie/needforheat-server-api](https://github.com/energietransitie/needforheat-server-api), made by the Research group Energy Transition at Windesheim University of Applied Sciences.
+Thanks to the authors and contributors of the original:
+* Nick van Ravenzwaaij · [@n-vr](https://github.com/n-vr)
+* Arjan peddemors · [@arpe](https://github.com/arpe)
+* Harris Mesic · [@labhatorian](https://github.com/Labhatorian)
 
 We use and gratefully aknowlegde the efforts of the makers of the following source code and libraries:
 
@@ -190,3 +191,7 @@ We use and gratefully aknowlegde the efforts of the makers of the following sour
 - [swagger-ui](https://github.com/swagger-api/swagger-ui), by SmartBear Software Inc., licensed under [Apache 2.0 license](https://github.com/swagger-api/swagger-ui/blob/master/LICENSE)
 
 This `README` uses [badges](https://github.com/badges/shields/blob/master/LICENSE), by [Shield.io](https://github.com/badges), licensed under [CC0 v1.0 Universal](https://github.com/badges/shields/blob/master/LICENSE)
+
+### AI assistance
+
+Since November 2026, parts of the maintenance of this repository have been done with [Claude Code](https://claude.com/claude-code) (Anthropic), under the author's direction and review. Commits made this way carry a `Co-Authored-By: Claude …` trailer. The author remains responsible for all content.

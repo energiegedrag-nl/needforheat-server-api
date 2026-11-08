@@ -3,8 +3,8 @@ package upload
 import (
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
 )
 
 // An Upload is a collection of measurements, with additional information.

@@ -3,7 +3,7 @@ package cloudfeed
 import (
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
 )
 
 // A CloudFeed stores auth information about CloudFeeds authorized by an account.

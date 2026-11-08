@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/apikey"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/apikey"
 )
 
 var (
