@@ -189,8 +189,12 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	go setupRPCHandler(adminHandler, cloudFeedHandler)
 
 	server := &http.Server{
-		Addr:    ":8080",
-		Handler: r,
+		Addr:              ":8080",
+		Handler:           r,
+		ReadHeaderTimeout: 10 * time.Second, // Protects against slowloris (gosec G112).
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	err = listenAndServe(ctx, server)
