@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/datasourcetype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/datasourcetype"
 )
 
 type DataSourceTypeService struct {

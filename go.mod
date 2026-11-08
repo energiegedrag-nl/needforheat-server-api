@@ -1,4 +1,4 @@
-module github.com/energietransitie/needforheat-server-api
+module github.com/energiegedrag-nl/needforheat-server-api
 
 go 1.26.0
 

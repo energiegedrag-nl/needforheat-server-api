@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/devicetype"
-	"github.com/energietransitie/needforheat-server-api/needforheat/upload"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/devicetype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )

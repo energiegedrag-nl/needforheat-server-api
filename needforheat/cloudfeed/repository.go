@@ -1,8 +1,8 @@
 package cloudfeed
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/device"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/device"
 )
 
 // A CloudFeedRepository can load, store and delete CloudFeeds.

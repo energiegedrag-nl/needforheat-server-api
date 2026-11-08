@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/internal/helpers"
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeed"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeedtype"
-	"github.com/energietransitie/needforheat-server-api/needforheat/upload"
-	"github.com/energietransitie/needforheat-server-api/services/cloudfeeds/enelogic"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeed"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeedtype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
+	"github.com/energiegedrag-nl/needforheat-server-api/services/cloudfeeds/enelogic"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )

@@ -3,7 +3,7 @@ package repositories
 import (
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/admin"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/admin"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

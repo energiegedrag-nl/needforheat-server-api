@@ -1,8 +1,8 @@
 package energyquery
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
-	"github.com/energietransitie/needforheat-server-api/needforheat/property"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/property"
 )
 
 // A EnergyQueryRepository can load, store and delete EnergyQueries.

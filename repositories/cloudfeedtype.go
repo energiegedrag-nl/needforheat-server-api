@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/energietransitie/needforheat-server-api/internal/encryption"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeedtype"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/encryption"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeedtype"
 	"gorm.io/gorm"
 )
 

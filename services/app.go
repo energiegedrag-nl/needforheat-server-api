@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat/app"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/app"
 )
 
 type AppService struct {

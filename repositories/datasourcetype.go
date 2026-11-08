@@ -3,7 +3,7 @@ package repositories
 import (
 	"errors"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/datasourcetype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/datasourcetype"
 	"gorm.io/gorm"
 )
 

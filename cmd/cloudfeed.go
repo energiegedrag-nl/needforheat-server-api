@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/energietransitie/needforheat-server-api/handlers"
-	"github.com/energietransitie/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/handlers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
 	"github.com/spf13/cobra"
 )
 

@@ -1,8 +1,8 @@
 package measurement
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/property"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/property"
 )
 
 // A Measurement is a measured value for a specific property.

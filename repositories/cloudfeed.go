@@ -1,11 +1,11 @@
 package repositories
 
 import (
-	"github.com/energietransitie/needforheat-server-api/internal/encryption"
-	"github.com/energietransitie/needforheat-server-api/internal/helpers"
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeed"
-	"github.com/energietransitie/needforheat-server-api/needforheat/device"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/encryption"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeed"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/device"
 	"gorm.io/gorm"
 )
 

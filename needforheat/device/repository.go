@@ -1,9 +1,9 @@
 package device
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/measurement"
-	"github.com/energietransitie/needforheat-server-api/needforheat/property"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/measurement"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/property"
 )
 
 // A DeviceRepository can load, store and delete devices.

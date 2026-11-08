@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquerytype"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquerytype"
 	"gorm.io/gorm"
 )
 

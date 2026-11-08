@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/energietransitie/needforheat-server-api/needforheat/apikey"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/apikey"
 	"gorm.io/gorm"
 )
 

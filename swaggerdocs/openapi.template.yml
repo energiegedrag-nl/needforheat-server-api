@@ -127,7 +127,7 @@ paths:
                       example: NeedForHeat
                 info_url:
                   type: string
-                  example: https://www.energietransitiewindesheim.nl/test-campaign-1
+                  example: https://energiegedrag.nl/test-campaign-1
                 data_source_list:
                   type: object
                   properties:
@@ -255,7 +255,7 @@ paths:
       tags:
         - Account
       summary: Create a new cloud feed auth
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: createCloudFeed
       security:
         - AccountAuthorizationToken: []
@@ -282,7 +282,7 @@ paths:
       tags:
         - Account
       summary: Get cloud feed information from the user
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getCloudFeed
       security:
         - AccountAuthorizationToken: []
@@ -343,7 +343,7 @@ paths:
       tags:
         - Device
       summary: Create a new device
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: createDevice
       security:
         - AccountAuthorizationToken: []
@@ -383,7 +383,7 @@ paths:
       tags:
         - EnergyQuery
       summary: Create a new EnergyQuery
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: createEnergyQuery
       security:
         - AccountAuthorizationToken: []
@@ -423,7 +423,7 @@ paths:
       tags:
         - Device
       summary: Get device information
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getDeviceByName
       security:
         - AccountAuthorizationToken: []
@@ -457,7 +457,7 @@ paths:
       tags:
         - Device
       summary: Get device measurements
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getDeviceMeasurements
       security:
         - AccountAuthorizationToken: []
@@ -509,7 +509,7 @@ paths:
       tags:
         - Device
       summary: Get all used device properties
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getDeviceProperties
       security:
         - AccountAuthorizationToken: []
@@ -579,7 +579,7 @@ paths:
       tags:
         - Device
       summary: Get all devices from current account
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getAllDeviceAccount
       security:
         - AccountAuthorizationToken: []
@@ -638,7 +638,7 @@ paths:
       tags:
         - EnergyQuery
       summary: Get Energy Query information
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getEnergyQueryByName
       security:
         - AccountAuthorizationToken: []
@@ -672,7 +672,7 @@ paths:
       tags:
         - EnergyQuery
       summary: Get Energy Query measurements
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getEnergyQueryMeasurements
       security:
         - AccountAuthorizationToken: []
@@ -724,7 +724,7 @@ paths:
       tags:
         - EnergyQuery
       summary: Get all used Energy Query properties
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getEnergyQueryProperties
       security:
         - AccountAuthorizationToken: []
@@ -758,7 +758,7 @@ paths:
       tags:
         - EnergyQuery
       summary: Get all Energy Queries from current account
-      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energietransitie/needforheat-server-api/blob/main/docs/model_future.pdf).
+      description: In the future, it is recommended to do this endpoint through a `DataSource`. For more information, refer to the model outlined in [this document](https://github.com/energiegedrag-nl/needforheat-server-api/blob/main/docs/model_future.pdf).
       operationId: getAllEnergyQueryAccount
       security:
         - AccountAuthorizationToken: []
@@ -916,10 +916,10 @@ components:
           example: NeedForHeat
         provisioning_url_template:
           type: string
-          example: https://energietransitiewindesheim.page.link/?link=https%3A%2F%2Fwww.energietransitiewindesheim.nl%2F%3Ftest_token%3D<account_activation_token>&apn=nl.windesheim.energietransitie.warmtewachter&ibi=nl.windesheim.energietransitie.warmtewachter&isi=1563201993&efr=1
+          example: https://energiegedrag.nl/nfh/activate?prod_token=<account_activation_token>
         oauth_redirect_url:
           type: string
-          example: https://energietransitiewindesheim.page.link/callback
+          example: https://energiegedrag.nl/nfh/callback
 
     Campaign:
       type: object
@@ -935,7 +935,7 @@ components:
           $ref: "#/components/schemas/App"
         info_url:
           type: string
-          example: https://www.energietransitiewindesheim.nl/test-campaign-1
+          example: https://energiegedrag.nl/test-campaign-1
 
     CloudFeedType:
       type: object
@@ -965,7 +965,7 @@ components:
           example: account
         redirect_url:
           type: string
-          example: https://energietransitiewindesheim.page.link/callback
+          example: https://energiegedrag.nl/nfh/callback
 
     CloudFeed:
       type: object
@@ -1032,7 +1032,7 @@ components:
         invitation_url:
           type: string
           readOnly: true
-          example: https://energietransitiewindesheim.page.link/?link=https%3A%2F%2Fwww.energietransitiewindesheim.nl%2F%3Ftest_token%3DeyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJUd29tZXNBUEl2MiIsInN1YiI6IjIiLCJleHAiOjE3MTUyNDg1NjYsIm5iZiI6MTY4MzcxMjU2NiwiaWF0IjoxNjgzNzEyNTY2LCJraW5kIjoiYWNjb3VudEFjdGl2YXRpb25Ub2tlbiJ9.InyaZw25soWCsZpl7te86gh1_u3vJja8q_LOY5vg-3w7DxZr_dYDsaHmSIMB2eOxIewo2lg_lF4QsiTWZH-GLA&apn=nl.windesheim.energietransitie.warmtewachter&ibi=nl.windesheim.energietransitie.warmtewachter&isi=1563201993&efr=1
+          example: https://energiegedrag.nl/nfh/activate?prod_token=<account_activation_token>
 
     AccountActivated:
       type: object
@@ -1323,13 +1323,13 @@ components:
                 example: 2
         installation_url:
           type: string
-          example: https://www.energietransitiewindesheim.nl/manuals/Generic-Test/
+          example: https://energiegedrag.nl/manuals/Generic-Test/
         info_url:
           type: string
-          example: https://www.energietransitiewindesheim.nl/brains4buildings2022/privacy/  
+          example: https://energiegedrag.nl/brains4buildings2022/privacy/  
         faq_url:
           type: string
-          example: https://www.energietransitiewindesheim.nl/brains4buildings2022/privacy/        
+          example: https://energiegedrag.nl/brains4buildings2022/privacy/        
         upload_schedule:
           type: string
           example: '* * * * *'

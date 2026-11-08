@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/energietransitie/needforheat-server-api/internal/helpers"
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquerytype"
-	"github.com/energietransitie/needforheat-server-api/services"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquerytype"
+	"github.com/energiegedrag-nl/needforheat-server-api/services"
 	"github.com/sirupsen/logrus"
 )
 

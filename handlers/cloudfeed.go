@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/energietransitie/needforheat-server-api/internal/helpers"
-	"github.com/energietransitie/needforheat-server-api/needforheat"
-	"github.com/energietransitie/needforheat-server-api/needforheat/authorization"
-	"github.com/energietransitie/needforheat-server-api/needforheat/cloudfeed"
-	"github.com/energietransitie/needforheat-server-api/services"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/cloudfeed"
+	"github.com/energiegedrag-nl/needforheat-server-api/services"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )

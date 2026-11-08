@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/energietransitie/needforheat-server-api/needforheat/authorization"
-	"github.com/energietransitie/needforheat-server-api/services"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/services"
 )
 
 // A Contextkey is the type for a context key.

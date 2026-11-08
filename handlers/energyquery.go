@@ -5,11 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/energietransitie/needforheat-server-api/internal/helpers"
-	"github.com/energietransitie/needforheat-server-api/needforheat/authorization"
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquery"
-	"github.com/energietransitie/needforheat-server-api/needforheat/energyquerytype"
-	"github.com/energietransitie/needforheat-server-api/services"
+	"github.com/energiegedrag-nl/needforheat-server-api/internal/helpers"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquery"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/energyquerytype"
+	"github.com/energiegedrag-nl/needforheat-server-api/services"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
