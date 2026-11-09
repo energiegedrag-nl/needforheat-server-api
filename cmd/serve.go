@@ -128,6 +128,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	energyQueryHandler := handlers.NewEnergyQueryHandler(energyQueryService)
 	energyQueryTypeHandler := handlers.NewEnergyQueryTypeHandler(energyQueryTypeService)
 	apiKeyHandler := handlers.NewAPIKeyHandler(apiKeyService)
+	cockpitHandler := handlers.NewCockpitHandler(repositories.NewCockpitRepository(db), accountService)
 
 	go cloudFeedService.RefreshTokensInBackground(ctx, preRenewalDuration)
 	go cloudFeedService.DownloadInBackground(ctx, config.downloadStartTime)
@@ -183,6 +184,16 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	})
 
 	r.Method("GET", "/api_key/{api_name}", accountAuth(apiKeyHandler.GetAPIKey)) // GET on /api_key/{api_name}
+
+	// Routes for the NeedForHeat Cockpit (docs/22). The reverse proxy only lets /admin through from the LAN/WireGuard.
+	admin := func(h handlers.Handler) handlers.Handler { return adminAuth(adminHandler.Middleware(h)) }
+	r.Route("/admin", func(r chi.Router) {
+		r.Method("GET", "/overview", admin(cockpitHandler.Overview))
+		r.Method("GET", "/campaigns/{campaign_id}/status", admin(cockpitHandler.CampaignStatus))
+		r.Method("PATCH", "/campaigns/{campaign_id}", admin(cockpitHandler.UpdateCampaign))
+		r.Method("POST", "/campaigns/{campaign_id}/accounts", admin(cockpitHandler.CreateAccounts))
+		r.Method("POST", "/accounts/{account_id}/invitation", admin(cockpitHandler.NewInvitation))
+	})
 
 	setupSwaggerDocs(r, config.BaseURL)
 
