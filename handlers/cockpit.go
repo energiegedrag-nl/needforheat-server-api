@@ -126,8 +126,7 @@ func (h *CockpitHandler) CreateAccounts(w http.ResponseWriter, r *http.Request) 
 		}
 		invitations = append(invitations, cockpit.Invitation{AccountID: a.ID, InvitationURL: a.InvitationURL})
 	}
-	w.WriteHeader(http.StatusCreated)
-	return writeJSON(w, invitations)
+	return writeJSON(w, invitations) // Handler.ServeHTTP answers 200, like the other create routes
 }
 
 // POST /admin/accounts/{account_id}/invitation: a new invitation link for a participant who has not activated yet.
