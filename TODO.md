@@ -7,7 +7,7 @@ Items that touch several repositories are written out in full in one *lead* repo
 ## Now: needed to run at home this winter
 
 - [ ] <a id="down"></a>**Verify the server stays up under real load.** The production server occasionally went down. The missing indexes are fixed (#13); after deployment, watch memory, slow queries and restarts for a few weeks and add basic health monitoring. Earlier outages (May and June 2024) needed a manual reset by the hosting party; memory looked fine afterwards. Analysis queries took up to 30 minutes, which points at missing indexes as well. Also affects: needforheat-server-configuration. *(Trello #1155)*
-- [ ] → Persistent buffering for at least 24 hours — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#buffer) *(Trello #25, #494)*
+- [ ] → Field-test the persistent measurement buffer — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#buffer) *(Trello #25, #494)*
 - [ ] → Back up the NeedForHeat database — see [needforheat-server-configuration](https://github.com/energiegedrag-nl/needforheat-server-configuration/blob/main/TODO.md#backup) *(Trello #654, #1159)*
 
 ## Soon: robustness and correctness
@@ -35,7 +35,7 @@ Items that touch several repositories are written out in full in one *lead* repo
 - [ ] → Security research: proof of possession and device trust — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#security) *(Trello #307, #868, #308, #326, #461)*
 - [ ] → Finish the rename from Twomes to NeedForHeat — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#rename) *(Trello #1030)*
 - [ ] → CONTRIBUTING.md with the branching workflow — see [needforheat-generic-firmware](https://github.com/energiegedrag-nl/needforheat-generic-firmware/blob/main/TODO.md#contrib) *(Trello #394, #1032)*
-- [ ] → Compact provisioning QR code (NFH:// deep link) — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#qr) *(Trello #711, #709)*
+- [ ] → Provisioning QR as NFH:// deep link — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#qr) *(Trello #711, #709)*
 - [ ] → Log in with an external identity (OpenID Connect pairwise) — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#social) *(Trello #650)*
 - [ ] → Building profile energy query with external APIs — see [needforheat-gearup-app](https://github.com/energiegedrag-nl/needforheat-gearup-app/blob/main/TODO.md#buildingprofile) *(Trello #690)*
 
