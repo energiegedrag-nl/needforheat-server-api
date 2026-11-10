@@ -64,6 +64,8 @@ func NewDatabaseConnectionAndMigrate(ctx context.Context, dsn string) (db *gorm.
 				&APIKeyModel{},
 				&InventoryDeviceModel{},
 				&InventoryEventModel{},
+				&VaultBlobModel{},
+				&CampaignMailModel{},
 			)
 		}
 
