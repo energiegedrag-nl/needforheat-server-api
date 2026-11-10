@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// InventoryDeviceModel is a device in the inventory of the flash station (docs/22, § 6).
+// InventoryDeviceModel is a device in the inventory of the flash station (energiegedrag-cockpit docs/ontwerp.md, § 6).
 type InventoryDeviceModel struct {
 	ID              uint   `gorm:"primaryKey"`
 	MAC             string `gorm:"column:mac;size:17;uniqueIndex;not null"`

@@ -1,4 +1,4 @@
-// Package inventory holds the device inventory of the NeedForHeat Cockpit flash station (docs/22, § 6): every
+// Package inventory holds the device inventory of the NeedForHeat Cockpit flash station (energiegedrag-cockpit docs/ontwerp.md, § 6): every
 // ESP32 that was flashed in the lab, keyed by its MAC address, with its life cycle and history.
 //
 // Life cycle: flashed → assigned (to a participant account) → shipped → returned → erased → flashed again.

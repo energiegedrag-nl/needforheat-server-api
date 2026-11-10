@@ -1,5 +1,5 @@
 // Package cockpit holds the read models of the NeedForHeat Cockpit, the web portal in which researchers set up
-// campaigns, invite participants and watch whether data keeps coming in (design: docs/22 in the deployment repository).
+// campaigns, invite participants and watch whether data keeps coming in (design: docs/ontwerp.md in energiegedrag-cockpit).
 //
 // Times are Unix seconds, like elsewhere in the API.
 package cockpit

@@ -187,7 +187,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("GET", "/api_key/{api_name}", accountAuth(apiKeyHandler.GetAPIKey)) // GET on /api_key/{api_name}
 
-	// Routes for the NeedForHeat Cockpit (docs/22). The reverse proxy only lets /admin through from the LAN/WireGuard.
+	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md). The reverse proxy only lets /admin through from the LAN/VPN.
 	admin := func(h handlers.Handler) handlers.Handler { return adminAuth(adminHandler.Middleware(h)) }
 	r.Route("/admin", func(r chi.Router) {
 		r.Method("GET", "/overview", admin(cockpitHandler.Overview))
