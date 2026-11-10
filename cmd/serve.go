@@ -130,6 +130,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	apiKeyHandler := handlers.NewAPIKeyHandler(apiKeyService)
 	cockpitHandler := handlers.NewCockpitHandler(repositories.NewCockpitRepository(db), accountService)
 	inventoryHandler := handlers.NewInventoryHandler(repositories.NewInventoryRepository(db))
+	vaultHandler := handlers.NewVaultHandler(repositories.NewVaultRepository(db))
 
 	go cloudFeedService.RefreshTokensInBackground(ctx, preRenewalDuration)
 	go cloudFeedService.DownloadInBackground(ctx, config.downloadStartTime)
@@ -200,6 +201,13 @@ func handleServe(cmd *cobra.Command, args []string) error {
 		r.Method("GET", "/inventory/mac/{mac}", admin(inventoryHandler.GetByMAC))
 		r.Method("GET", "/inventory/{device_id}", admin(inventoryHandler.Get))
 		r.Method("POST", "/inventory/{device_id}/events", admin(inventoryHandler.Apply))
+		// Local vault (energiegedrag-cockpit docs/kluis.md): stored encrypted, the server cannot read it. Mail setting per campaign.
+		r.Method("GET", "/vaults/{vault_id}", admin(vaultHandler.Get))
+		r.Method("PUT", "/vaults/{vault_id}", admin(vaultHandler.Put))
+		r.Method("GET", "/vaults/{vault_id}/versions", admin(vaultHandler.Versions))
+		r.Method("GET", "/vaults/{vault_id}/versions/{version}", admin(vaultHandler.GetVersion))
+		r.Method("GET", "/campaigns/{campaign_id}/mail", admin(vaultHandler.CampaignMail))
+		r.Method("PUT", "/campaigns/{campaign_id}/mail", admin(vaultHandler.SetCampaignMail))
 	})
 
 	setupSwaggerDocs(r, config.BaseURL)
