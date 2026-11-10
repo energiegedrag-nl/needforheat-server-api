@@ -129,6 +129,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	energyQueryTypeHandler := handlers.NewEnergyQueryTypeHandler(energyQueryTypeService)
 	apiKeyHandler := handlers.NewAPIKeyHandler(apiKeyService)
 	cockpitHandler := handlers.NewCockpitHandler(repositories.NewCockpitRepository(db), accountService)
+	inventoryHandler := handlers.NewInventoryHandler(repositories.NewInventoryRepository(db))
 
 	go cloudFeedService.RefreshTokensInBackground(ctx, preRenewalDuration)
 	go cloudFeedService.DownloadInBackground(ctx, config.downloadStartTime)
@@ -193,6 +194,12 @@ func handleServe(cmd *cobra.Command, args []string) error {
 		r.Method("PATCH", "/campaigns/{campaign_id}", admin(cockpitHandler.UpdateCampaign))
 		r.Method("POST", "/campaigns/{campaign_id}/accounts", admin(cockpitHandler.CreateAccounts))
 		r.Method("POST", "/accounts/{account_id}/invitation", admin(cockpitHandler.NewInvitation))
+		// Device inventory of the flash station.
+		r.Method("GET", "/inventory", admin(inventoryHandler.List))
+		r.Method("POST", "/inventory/flash", admin(inventoryHandler.RecordFlash))
+		r.Method("GET", "/inventory/mac/{mac}", admin(inventoryHandler.GetByMAC))
+		r.Method("GET", "/inventory/{device_id}", admin(inventoryHandler.Get))
+		r.Method("POST", "/inventory/{device_id}/events", admin(inventoryHandler.Apply))
 	})
 
 	setupSwaggerDocs(r, config.BaseURL)
