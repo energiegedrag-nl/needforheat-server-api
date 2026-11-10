@@ -201,7 +201,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 		r.Method("GET", "/inventory/mac/{mac}", admin(inventoryHandler.GetByMAC))
 		r.Method("GET", "/inventory/{device_id}", admin(inventoryHandler.Get))
 		r.Method("POST", "/inventory/{device_id}/events", admin(inventoryHandler.Apply))
-		// Local vault (docs/23): stored encrypted, the server cannot read it. Mail setting per campaign.
+		// Local vault (docs/26): stored encrypted, the server cannot read it. Mail setting per campaign.
 		r.Method("GET", "/vaults/{vault_id}", admin(vaultHandler.Get))
 		r.Method("PUT", "/vaults/{vault_id}", admin(vaultHandler.Put))
 		r.Method("GET", "/vaults/{vault_id}/versions", admin(vaultHandler.Versions))

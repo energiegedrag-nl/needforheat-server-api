@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// VaultHandler serves the encrypted vault of the Cockpit (docs/23) and the mail setting per campaign.
+// VaultHandler serves the encrypted vault of the Cockpit (docs/26) and the mail setting per campaign.
 type VaultHandler struct {
 	repository *repositories.VaultRepository
 	now        func() time.Time

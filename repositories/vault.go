@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// The local vault of the Cockpit (docs/23): the campaign manager's participant database, age-encrypted in the browser.
+// The local vault of the Cockpit (docs/26): the campaign manager's participant database, age-encrypted in the browser.
 // The server stores it as an opaque blob with a version number and can neither read nor check its contents, apart
 // from the age header line that shows it is encrypted.
 
