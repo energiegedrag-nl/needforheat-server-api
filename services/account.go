@@ -88,6 +88,30 @@ func (s *AccountService) Create(campaign campaign.Campaign) (account.Account, er
 	return a, nil
 }
 
+// NewInvitation issues a new activation link for an account that has not been activated yet, for example when a
+// participant lost the first one. Earlier links stay valid: activation tokens do not expire yet (TODO tokens).
+func (s *AccountService) NewInvitation(id uint) (account.Account, error) {
+	a, err := s.repository.Find(account.Account{ID: id})
+	if err != nil {
+		return account.Account{}, err
+	}
+	if a.ActivatedAt != nil {
+		return account.Account{}, account.ErrAccountAlreadyActivated
+	}
+
+	c, err := s.campaignService.Find(campaign.Campaign{ID: a.Campaign.ID})
+	if err != nil {
+		return account.Account{}, err
+	}
+
+	a.InvitationToken, err = s.authService.CreateToken(authorization.AccountActivationToken, a.ID, time.Time{})
+	if err != nil {
+		return account.Account{}, err
+	}
+	a.InvitationURL = s.activationTokenRegex.ReplaceAllString(c.App.ProvisioningURLTemplate, url.PathEscape(a.InvitationToken))
+	return a, nil
+}
+
 // Activate an account.
 func (s *AccountService) Activate(id uint) (account.Account, error) {
 	a, err := s.repository.Find(account.Account{ID: id})
