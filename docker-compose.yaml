@@ -4,12 +4,15 @@ services:
     build: .
     ports:
       - 8080:8080
+      - 127.0.0.1:8081:8081 # Admin routes (/admin): only on a private address, never through the public proxy.
     volumes:
       - ./data:/data
     environment:
       - NFH_DSN=root:needforheat@tcp(db:3306)/needforheat
       - NFH_BASE_URL=http://localhost:8080
       - NFH_DOWNLOAD_TIME=04h00m # 04:00 UTC
+      - NFH_ADMIN_ADDR=:8081 # Listen address of the admin routes (default :8081; empty: not served).
+      - NFH_TIMEZONE=Europe/Amsterdam # Local time offset sent to devices with each upload (default Europe/Amsterdam).
     depends_on:
       - db
 

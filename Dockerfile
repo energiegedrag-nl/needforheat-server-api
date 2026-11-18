@@ -28,7 +28,8 @@ USER nonroot
 
 VOLUME /data
 
-EXPOSE 8080
+# 8080: public API. 8081: admin routes (/admin); publish only on a private address.
+EXPOSE 8080 8081
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s --retries=3 \
     CMD ["needforheat-server-api", "healthcheck"]

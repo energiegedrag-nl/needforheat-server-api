@@ -119,7 +119,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	cloudFeedTypeHandler := handlers.NewCloudFeedTypeHandler(cloudFeedTypeService)
 	cloudFeedHandler := handlers.NewCloudFeedHandler(cloudFeedService)
 	campaignHandler := handlers.NewCampaignHandler(campaignService)
-	uploadHandler := handlers.NewUploadHandler(uploadService)
+	uploadHandler := handlers.NewUploadHandler(uploadService, config.Location)
 	accountHandler := handlers.NewAccountHandler(accountService)
 	deviceTypeHandler := handlers.NewDeviceTypeHandler(deviceTypeService)
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
@@ -136,11 +136,14 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	go cloudFeedService.DownloadInBackground(ctx, config.downloadStartTime)
 
 	//Router
-	r := chi.NewRouter()
-
-	r.Use(middleware.Timeout(time.Second * 30))
-	r.Use(middleware.Heartbeat("/healthcheck")) // Endpoint for health check.
-	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger()}))
+	newRouter := func() *chi.Mux {
+		r := chi.NewRouter()
+		r.Use(middleware.Timeout(time.Second * 30))
+		r.Use(middleware.Heartbeat("/healthcheck")) // Endpoint for health check.
+		r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger()}))
+		return r
+	}
+	r := newRouter()
 
 	r.Method("POST", "/app", adminAuth(adminHandler.Middleware(appHandler.Create))) // POST on /app.
 
@@ -187,9 +190,12 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("GET", "/api_key/{api_name}", accountAuth(apiKeyHandler.GetAPIKey)) // GET on /api_key/{api_name}
 
-	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md). The reverse proxy only lets /admin through from the LAN/VPN.
+	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md). They are served on a separate
+	// listener (NFH_ADMIN_ADDR), not on the public one: whatever the reverse proxy does with the public port, /admin
+	// is not on it. Publish the admin port only on a private address (LAN, WireGuard, or localhost for an SSH tunnel).
 	admin := func(h handlers.Handler) handlers.Handler { return adminAuth(adminHandler.Middleware(h)) }
-	r.Route("/admin", func(r chi.Router) {
+	adminRouter := newRouter()
+	adminRouter.Route("/admin", func(r chi.Router) {
 		r.Method("GET", "/overview", admin(cockpitHandler.Overview))
 		r.Method("GET", "/campaigns/{campaign_id}/status", admin(cockpitHandler.CampaignStatus))
 		r.Method("PATCH", "/campaigns/{campaign_id}", admin(cockpitHandler.UpdateCampaign))
@@ -223,7 +229,21 @@ func handleServe(cmd *cobra.Command, args []string) error {
 		IdleTimeout:       120 * time.Second,
 	}
 
-	err = listenAndServe(ctx, server)
+	servers := []*http.Server{server}
+	if config.AdminAddr != "" {
+		servers = append(servers, &http.Server{
+			Addr:              config.AdminAddr,
+			Handler:           adminRouter,
+			ReadHeaderTimeout: 10 * time.Second,
+			ReadTimeout:       60 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       120 * time.Second,
+		})
+	} else {
+		logrus.Warning("NFH_ADMIN_ADDR is empty: the admin routes (/admin) are not served")
+	}
+
+	err = listenAndServe(ctx, servers...)
 	if err != nil {
 		return err
 	}
@@ -233,11 +253,15 @@ func handleServe(cmd *cobra.Command, args []string) error {
 const (
 	day                 = time.Hour * 24
 	defaultDownloadTime = "04h00s"
+	defaultAdminAddr    = ":8081"
+	defaultTimezone     = "Europe/Amsterdam"
 )
 
 type Configuration struct {
 	DatabaseDSN       string
 	BaseURL           string
+	AdminAddr         string         // Listen address of the admin routes; empty: not served.
+	Location          *time.Location // Time zone whose offset devices get for their screen.
 	downloadStartTime time.Time
 }
 
@@ -270,33 +294,51 @@ func getConfiguration() Configuration {
 		downloadStartTime = downloadStartTime.Add(day)
 	}
 
+	adminAddr, ok := os.LookupEnv("NFH_ADMIN_ADDR")
+	if !ok {
+		adminAddr = defaultAdminAddr
+	}
+
+	timezone, ok := os.LookupEnv("NFH_TIMEZONE")
+	if !ok || timezone == "" {
+		timezone = defaultTimezone
+	}
+	location, err := time.LoadLocation(timezone)
+	if err != nil {
+		logrus.Fatal("NFH_TIMEZONE: ", err)
+	}
+
 	return Configuration{
 		DatabaseDSN:       dsn,
 		BaseURL:           baseURL,
+		AdminAddr:         adminAddr,
+		Location:          location,
 		downloadStartTime: downloadStartTime,
 	}
 }
 
-func listenAndServe(ctx context.Context, server *http.Server) error {
+func listenAndServe(ctx context.Context, servers ...*http.Server) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
-	g.Go(func() error {
-		err := server.ListenAndServe()
-		if err == http.ErrServerClosed {
-			return nil
-		}
-		return err
-	})
-	logrus.Infoln("listening on", server.Addr)
+	for _, server := range servers {
+		g.Go(func() error {
+			err := server.ListenAndServe()
+			if err == http.ErrServerClosed {
+				return nil
+			}
+			return err
+		})
+		logrus.Infoln("listening on", server.Addr)
 
-	g.Go(func() error {
-		<-gCtx.Done()
+		g.Go(func() error {
+			<-gCtx.Done()
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancel()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+			defer cancel()
 
-		return server.Shutdown(shutdownCtx)
-	})
+			return server.Shutdown(shutdownCtx)
+		})
+	}
 
 	err := g.Wait()
 	if err != http.ErrServerClosed {
