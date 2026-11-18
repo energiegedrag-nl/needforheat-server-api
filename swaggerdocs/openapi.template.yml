@@ -128,6 +128,10 @@ paths:
                 info_url:
                   type: string
                   example: https://energiegedrag.nl/test-campaign-1
+                language:
+                  type: string
+                  description: Default language of the campaign (BCP 47); nl-NL when left out.
+                  example: nl-NL
                 data_source_list:
                   type: object
                   properties:
@@ -936,6 +940,10 @@ components:
         info_url:
           type: string
           example: https://energiegedrag.nl/test-campaign-1
+        language:
+          type: string
+          description: Default language of the campaign (BCP 47), e.g. for texts on devices, manuals and invitations.
+          example: nl-NL
 
     CloudFeedType:
       type: object

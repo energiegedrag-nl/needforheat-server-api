@@ -37,8 +37,13 @@ func (s *CampaignService) Create(
 	startTime,
 	endTime *needforheat.Time,
 	dataSourceList datasourcelist.DataSourceList,
+	language string,
 ) (campaign.Campaign, error) {
-	app, err := s.appService.Find(app)
+	language, err := campaign.NormalizeLanguage(language)
+	if err != nil {
+		return campaign.Campaign{}, err
+	}
+	app, err = s.appService.Find(app)
 	if err != nil {
 		return campaign.Campaign{}, err
 	}
@@ -49,6 +54,7 @@ func (s *CampaignService) Create(
 	}
 	logrus.Info(foundDataSourceList)
 	campaign := campaign.MakeCampaign(name, app, infoURL, startTime, endTime, foundDataSourceList)
+	campaign.Language = language
 
 	campaignCreated, err := s.repository.Create(campaign)
 	campaignCreated.DataSourceList = foundDataSourceList

@@ -26,6 +26,7 @@ type CampaignModel struct {
 	StartTime        *needforheat.Time
 	EndTime          *needforheat.Time
 	DataSourceListID uint
+	Language         string `gorm:"size:16;not null;default:nl-NL"`
 }
 
 // Set the name of the table in the database.
@@ -46,6 +47,7 @@ func MakeCampaignModel(campaign campaign.Campaign) CampaignModel {
 		StartTime:        campaign.StartTime,
 		EndTime:          campaign.EndTime,
 		DataSourceListID: campaign.DataSourceList.ID,
+		Language:         campaign.Language,
 	}
 }
 
@@ -58,6 +60,7 @@ func (m *CampaignModel) fromModel() campaign.Campaign {
 		InfoURL:   m.InfoURL,
 		StartTime: m.StartTime,
 		EndTime:   m.EndTime,
+		Language:  m.Language,
 	}
 }
 

@@ -44,6 +44,7 @@ func (r *CockpitRepository) campaignSummary(m CampaignModel, counts map[uint]cam
 		Name:             m.Name,
 		App:              m.App.Name,
 		InfoURL:          m.InfoURL,
+		Language:         m.Language,
 		StartTime:        cockpit.Unix(start),
 		EndTime:          cockpit.Unix(end),
 		State:            cockpit.StateOfCampaign(start, end, now),
@@ -312,6 +313,9 @@ func (r *CockpitRepository) UpdateCampaign(campaignID uint, u cockpit.CampaignUp
 	changes := map[string]any{}
 	if u.InfoURL != nil {
 		changes["info_url"] = *u.InfoURL
+	}
+	if u.Language != nil {
+		changes["language"] = *u.Language // normalized by the handler
 	}
 	if u.StartTime != nil {
 		changes["start_time"] = needforheat.Time(time.Unix(*u.StartTime, 0).UTC())

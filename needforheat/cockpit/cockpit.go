@@ -52,6 +52,7 @@ type Campaign struct {
 	Name             string `json:"name"`
 	App              string `json:"app"`
 	InfoURL          string `json:"info_url"`
+	Language         string `json:"language"`
 	StartTime        *int64 `json:"start_time"`
 	EndTime          *int64 `json:"end_time"`
 	State            string `json:"state"`
@@ -104,6 +105,7 @@ type CampaignStatus struct {
 // A CampaignUpdate changes a campaign; nil fields stay as they are.
 type CampaignUpdate struct {
 	InfoURL   *string `json:"info_url"`
+	Language  *string `json:"language"`
 	StartTime *int64  `json:"start_time"`
 	EndTime   *int64  `json:"end_time"`
 }
