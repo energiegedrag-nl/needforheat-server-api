@@ -139,6 +139,16 @@ func TestCockpitCampaignStatus(t *testing.T) {
 	if status.Campaign.InfoURL != info || status.Campaign.EndTime == nil || *status.Campaign.EndTime != end {
 		t.Errorf("after update: %+v", status.Campaign)
 	}
+	if status.Campaign.Language != "nl-NL" {
+		t.Errorf("default language: %q", status.Campaign.Language)
+	}
+	en := "en-US"
+	must(t, repo.UpdateCampaign(campaign.ID, cockpit.CampaignUpdate{Language: &en}))
+	status, err = repo.CampaignStatus(campaign.ID, now)
+	must(t, err)
+	if status.Campaign.Language != "en-US" || status.Campaign.InfoURL != info {
+		t.Errorf("after language update: %+v", status.Campaign)
+	}
 	if err := repo.UpdateCampaign(9999, cockpit.CampaignUpdate{InfoURL: &info}); err == nil {
 		t.Error("update of unknown campaign: want error")
 	}

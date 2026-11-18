@@ -86,6 +86,13 @@ func (h *CockpitHandler) UpdateCampaign(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
 		return NewHandlerError(err, "bad request", http.StatusBadRequest)
 	}
+	if update.Language != nil {
+		language, err := campaign.NormalizeLanguage(*update.Language)
+		if err != nil {
+			return NewHandlerError(err, "bad request", http.StatusBadRequest).WithMessage(err.Error())
+		}
+		update.Language = &language
+	}
 	if update.StartTime != nil && update.EndTime != nil && *update.EndTime <= *update.StartTime {
 		return NewHandlerError(errors.New("end before start"), "end_time must be after start_time", http.StatusBadRequest)
 	}

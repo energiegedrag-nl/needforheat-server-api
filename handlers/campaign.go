@@ -29,6 +29,10 @@ func (h *CampaignHandler) Create(w http.ResponseWriter, r *http.Request) error {
 		return NewHandlerError(err, "bad request", http.StatusBadRequest).WithLevel(logrus.ErrorLevel)
 	}
 
+	if _, err := campaign.NormalizeLanguage(request.Language); err != nil {
+		return NewHandlerError(err, "bad request", http.StatusBadRequest).WithMessage(err.Error())
+	}
+
 	campaign, err := h.service.Create(
 		request.Name,
 		request.App,
@@ -36,6 +40,7 @@ func (h *CampaignHandler) Create(w http.ResponseWriter, r *http.Request) error {
 		request.StartTime,
 		request.EndTime,
 		request.DataSourceList,
+		request.Language,
 	)
 
 	if err != nil {
