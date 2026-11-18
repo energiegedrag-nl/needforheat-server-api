@@ -18,6 +18,11 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags=
 
 FROM gcr.io/distroless/static-debian13:nonroot
 
+# The server opens ./data/key.pem and ./data/admins.db relative to the working directory, and the :nonroot base
+# image sets it to /home/nonroot. Without this line the server stops at start-up:
+# "open ./data/key.pem: no such file or directory".
+WORKDIR /
+
 # Copy /data folder with correct permissions.
 COPY --from=build --chown=nonroot /data /data
 
