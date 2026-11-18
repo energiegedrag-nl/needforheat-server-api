@@ -796,11 +796,11 @@ paths:
               $ref: "#/components/schemas/Upload"
       responses:
         "200":
-          description: OK
+          description: OK. Includes the local time offset (NFH_TIMEZONE), which devices use for the time on their screen.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Upload"
+                $ref: "#/components/schemas/UploadResponse"
         "400":
           $ref: "#/components/responses/400BadRequest"
         "401":
@@ -1239,6 +1239,23 @@ components:
         items:
           $ref: "#/components/schemas/EnergyQueryInfo"
 
+    UploadResponse:
+      allOf:
+        - $ref: "#/components/schemas/Upload"
+        - type: object
+          properties:
+            utc_offset_s:
+              type: integer
+              description: Offset of local time from UTC now, in seconds.
+              example: 3600
+            next_offset_change:
+              type: integer
+              description: Unix time (UTC) of the next change of the offset; absent if the zone has none.
+              example: 1806195600
+            next_utc_offset_s:
+              type: integer
+              description: Offset after next_offset_change; absent if the zone has no changes.
+              example: 7200
     Upload:
       type: object
       properties:

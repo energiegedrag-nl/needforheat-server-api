@@ -28,7 +28,8 @@ USER nonroot
 
 VOLUME /data
 
-EXPOSE 8080
+# 8080: public API. 8082: routes that need an admin token (for the Cockpit); never publish it on the internet.
+EXPOSE 8080 8082
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s --retries=3 \
     CMD ["needforheat-server-api", "healthcheck"]

@@ -119,7 +119,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	cloudFeedTypeHandler := handlers.NewCloudFeedTypeHandler(cloudFeedTypeService)
 	cloudFeedHandler := handlers.NewCloudFeedHandler(cloudFeedService)
 	campaignHandler := handlers.NewCampaignHandler(campaignService)
-	uploadHandler := handlers.NewUploadHandler(uploadService)
+	uploadHandler := handlers.NewUploadHandler(uploadService, config.Location)
 	accountHandler := handlers.NewAccountHandler(accountService)
 	deviceTypeHandler := handlers.NewDeviceTypeHandler(deviceTypeService)
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
@@ -136,21 +136,17 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	go cloudFeedService.DownloadInBackground(ctx, config.downloadStartTime)
 
 	//Router
-	r := chi.NewRouter()
-
-	r.Use(middleware.Timeout(time.Second * 30))
-	r.Use(middleware.Heartbeat("/healthcheck")) // Endpoint for health check.
-	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger()}))
-
-	r.Method("POST", "/app", adminAuth(adminHandler.Middleware(appHandler.Create))) // POST on /app.
-
-	r.Method("POST", "/cloud_feed_type", adminAuth(adminHandler.Middleware(cloudFeedTypeHandler.Create))) // POST on /cloud_feed.
-
-	r.Method("POST", "/campaign", adminAuth(adminHandler.Middleware(campaignHandler.Create))) // POST on /campaign.
+	newRouter := func() *chi.Mux {
+		r := chi.NewRouter()
+		r.Use(middleware.Timeout(time.Second * 30))
+		r.Use(middleware.Heartbeat("/healthcheck")) // Endpoint for health check.
+		r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: logrus.StandardLogger()}))
+		return r
+	}
+	r := newRouter()
 
 	r.Route("/account", func(r chi.Router) {
-		r.Method("POST", "/", adminAuth(adminHandler.Middleware(accountHandler.Create))) // POST on /account.
-		r.Method("POST", "/activate", accountActivationAuth(accountHandler.Activate))    // POST on /account/activate.
+		r.Method("POST", "/activate", accountActivationAuth(accountHandler.Activate)) // POST on /account/activate.
 
 		r.Route("/{account_id}", func(r chi.Router) {
 			r.Method("GET", "/", accountAuth(accountHandler.GetAccountByID))                     // GET on /account/{account_id}.
@@ -158,8 +154,6 @@ func handleServe(cmd *cobra.Command, args []string) error {
 			r.Method("GET", "/cloud_feed", accountAuth(accountHandler.GetCloudFeedAuthStatuses)) // GET on /account/{account_id}/cloud_feed_auth.
 		})
 	})
-
-	r.Method("POST", "/device_type", adminAuth(adminHandler.Middleware(deviceTypeHandler.Create))) // POST on /device_type.
 
 	r.Route("/device", func(r chi.Router) {
 		r.Method("POST", "/", accountAuth(deviceHandler.Create))                                         // POST on /device.
@@ -172,11 +166,6 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("POST", "/upload", deviceORaccountAuth(uploadHandler.Create)) // POST on /upload.
 
-	r.Method("POST", "/data_source_list", adminAuth(dataSourceListHandler.Create)) // POST on /data_source_list
-	r.Method("POST", "/data_source_type", adminAuth(dataSourceTypeHandler.Create)) // POST on /data_source_type
-
-	r.Method("POST", "/energy_query_type", adminAuth(adminHandler.Middleware(energyQueryTypeHandler.Create))) // POST on /energy_query_type
-
 	r.Route("/energy_query", func(r chi.Router) {
 		r.Method("POST", "/", accountAuth(energyQueryHandler.Create))                                                    // POST on /energy_query.
 		r.Method("GET", "/{energy_query_type}", accountAuth(energyQueryHandler.GetEnergyQueryByName))                    // GET on /energy_query/{energy_query_type}.
@@ -187,9 +176,23 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("GET", "/api_key/{api_name}", accountAuth(apiKeyHandler.GetAPIKey)) // GET on /api_key/{api_name}
 
-	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md). The reverse proxy only lets /admin through from the LAN/VPN.
+	// Every route that needs an admin token is served on a separate listener (NFH_ADMIN_ADDR), not on the public one:
+	// whatever the reverse proxy does with the public port, these routes are not on it. Only the Cockpit (on the
+	// server's Docker network, itself reachable from WireGuard or the LAN only) should reach the admin port.
+	// All of them check the admin's expiry and revocation (adminHandler.Middleware); /data_source_list and
+	// /data_source_type did not before.
 	admin := func(h handlers.Handler) handlers.Handler { return adminAuth(adminHandler.Middleware(h)) }
-	r.Route("/admin", func(r chi.Router) {
+	adminRouter := newRouter()
+	adminRouter.Method("POST", "/app", admin(appHandler.Create))
+	adminRouter.Method("POST", "/cloud_feed_type", admin(cloudFeedTypeHandler.Create))
+	adminRouter.Method("POST", "/campaign", admin(campaignHandler.Create))
+	adminRouter.Method("POST", "/account", admin(accountHandler.Create))
+	adminRouter.Method("POST", "/device_type", admin(deviceTypeHandler.Create))
+	adminRouter.Method("POST", "/data_source_list", admin(dataSourceListHandler.Create))
+	adminRouter.Method("POST", "/data_source_type", admin(dataSourceTypeHandler.Create))
+	adminRouter.Method("POST", "/energy_query_type", admin(energyQueryTypeHandler.Create))
+	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md).
+	adminRouter.Route("/admin", func(r chi.Router) {
 		r.Method("GET", "/overview", admin(cockpitHandler.Overview))
 		r.Method("GET", "/campaigns/{campaign_id}/status", admin(cockpitHandler.CampaignStatus))
 		r.Method("PATCH", "/campaigns/{campaign_id}", admin(cockpitHandler.UpdateCampaign))
@@ -223,7 +226,21 @@ func handleServe(cmd *cobra.Command, args []string) error {
 		IdleTimeout:       120 * time.Second,
 	}
 
-	err = listenAndServe(ctx, server)
+	servers := []*http.Server{server}
+	if config.AdminAddr != "" {
+		servers = append(servers, &http.Server{
+			Addr:              config.AdminAddr,
+			Handler:           adminRouter,
+			ReadHeaderTimeout: 10 * time.Second,
+			ReadTimeout:       60 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       120 * time.Second,
+		})
+	} else {
+		logrus.Warning("NFH_ADMIN_ADDR is empty: the admin routes (/admin) are not served")
+	}
+
+	err = listenAndServe(ctx, servers...)
 	if err != nil {
 		return err
 	}
@@ -233,11 +250,15 @@ func handleServe(cmd *cobra.Command, args []string) error {
 const (
 	day                 = time.Hour * 24
 	defaultDownloadTime = "04h00s"
+	defaultAdminAddr    = ":8082" // 127.0.0.1:8081 is the RPC listener of the admin CLI
+	defaultTimezone     = "Europe/Amsterdam"
 )
 
 type Configuration struct {
 	DatabaseDSN       string
 	BaseURL           string
+	AdminAddr         string         // Listen address of the admin routes; empty: not served.
+	Location          *time.Location // Time zone whose offset devices get for their screen.
 	downloadStartTime time.Time
 }
 
@@ -270,33 +291,51 @@ func getConfiguration() Configuration {
 		downloadStartTime = downloadStartTime.Add(day)
 	}
 
+	adminAddr, ok := os.LookupEnv("NFH_ADMIN_ADDR")
+	if !ok {
+		adminAddr = defaultAdminAddr
+	}
+
+	timezone, ok := os.LookupEnv("NFH_TIMEZONE")
+	if !ok || timezone == "" {
+		timezone = defaultTimezone
+	}
+	location, err := time.LoadLocation(timezone)
+	if err != nil {
+		logrus.Fatal("NFH_TIMEZONE: ", err)
+	}
+
 	return Configuration{
 		DatabaseDSN:       dsn,
 		BaseURL:           baseURL,
+		AdminAddr:         adminAddr,
+		Location:          location,
 		downloadStartTime: downloadStartTime,
 	}
 }
 
-func listenAndServe(ctx context.Context, server *http.Server) error {
+func listenAndServe(ctx context.Context, servers ...*http.Server) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
-	g.Go(func() error {
-		err := server.ListenAndServe()
-		if err == http.ErrServerClosed {
-			return nil
-		}
-		return err
-	})
-	logrus.Infoln("listening on", server.Addr)
+	for _, server := range servers {
+		g.Go(func() error {
+			err := server.ListenAndServe()
+			if err == http.ErrServerClosed {
+				return nil
+			}
+			return err
+		})
+		logrus.Infoln("listening on", server.Addr)
 
-	g.Go(func() error {
-		<-gCtx.Done()
+		g.Go(func() error {
+			<-gCtx.Done()
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancel()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+			defer cancel()
 
-		return server.Shutdown(shutdownCtx)
-	})
+			return server.Shutdown(shutdownCtx)
+		})
+	}
 
 	err := g.Wait()
 	if err != http.ErrServerClosed {

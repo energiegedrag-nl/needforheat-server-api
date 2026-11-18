@@ -4,21 +4,31 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/authorization"
+	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/displaytime"
 	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/upload"
 	"github.com/energiegedrag-nl/needforheat-server-api/services"
 	"github.com/sirupsen/logrus"
 )
 
 type UploadHandler struct {
-	service *services.UploadService
+	service  *services.UploadService
+	location *time.Location
 }
 
-// Create a new UploadHandler.
-func NewUploadHandler(service *services.UploadService) *UploadHandler {
+// uploadResponse is the stored upload plus the local time offset, which devices use for the time on their screen.
+type uploadResponse struct {
+	upload.Upload
+	displaytime.Offset
+}
+
+// Create a new UploadHandler. location is the time zone whose offset is returned with each upload.
+func NewUploadHandler(service *services.UploadService, location *time.Location) *UploadHandler {
 	return &UploadHandler{
-		service: service,
+		service:  service,
+		location: location,
 	}
 }
 
@@ -59,7 +69,7 @@ func (h *UploadHandler) Create(w http.ResponseWriter, r *http.Request) error {
 	// We don't need to return all measurements in the upload response.
 	upload.Measurements = nil
 
-	err = json.NewEncoder(w).Encode(&upload)
+	err = json.NewEncoder(w).Encode(&uploadResponse{Upload: upload, Offset: displaytime.At(h.location, time.Now())})
 	if err != nil {
 		return NewHandlerError(err, "internal server error", http.StatusInternalServerError).WithLevel(logrus.ErrorLevel)
 	}
