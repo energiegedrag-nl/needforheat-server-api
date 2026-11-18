@@ -145,15 +145,8 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	}
 	r := newRouter()
 
-	r.Method("POST", "/app", adminAuth(adminHandler.Middleware(appHandler.Create))) // POST on /app.
-
-	r.Method("POST", "/cloud_feed_type", adminAuth(adminHandler.Middleware(cloudFeedTypeHandler.Create))) // POST on /cloud_feed.
-
-	r.Method("POST", "/campaign", adminAuth(adminHandler.Middleware(campaignHandler.Create))) // POST on /campaign.
-
 	r.Route("/account", func(r chi.Router) {
-		r.Method("POST", "/", adminAuth(adminHandler.Middleware(accountHandler.Create))) // POST on /account.
-		r.Method("POST", "/activate", accountActivationAuth(accountHandler.Activate))    // POST on /account/activate.
+		r.Method("POST", "/activate", accountActivationAuth(accountHandler.Activate)) // POST on /account/activate.
 
 		r.Route("/{account_id}", func(r chi.Router) {
 			r.Method("GET", "/", accountAuth(accountHandler.GetAccountByID))                     // GET on /account/{account_id}.
@@ -161,8 +154,6 @@ func handleServe(cmd *cobra.Command, args []string) error {
 			r.Method("GET", "/cloud_feed", accountAuth(accountHandler.GetCloudFeedAuthStatuses)) // GET on /account/{account_id}/cloud_feed_auth.
 		})
 	})
-
-	r.Method("POST", "/device_type", adminAuth(adminHandler.Middleware(deviceTypeHandler.Create))) // POST on /device_type.
 
 	r.Route("/device", func(r chi.Router) {
 		r.Method("POST", "/", accountAuth(deviceHandler.Create))                                         // POST on /device.
@@ -175,11 +166,6 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("POST", "/upload", deviceORaccountAuth(uploadHandler.Create)) // POST on /upload.
 
-	r.Method("POST", "/data_source_list", adminAuth(dataSourceListHandler.Create)) // POST on /data_source_list
-	r.Method("POST", "/data_source_type", adminAuth(dataSourceTypeHandler.Create)) // POST on /data_source_type
-
-	r.Method("POST", "/energy_query_type", adminAuth(adminHandler.Middleware(energyQueryTypeHandler.Create))) // POST on /energy_query_type
-
 	r.Route("/energy_query", func(r chi.Router) {
 		r.Method("POST", "/", accountAuth(energyQueryHandler.Create))                                                    // POST on /energy_query.
 		r.Method("GET", "/{energy_query_type}", accountAuth(energyQueryHandler.GetEnergyQueryByName))                    // GET on /energy_query/{energy_query_type}.
@@ -190,11 +176,22 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("GET", "/api_key/{api_name}", accountAuth(apiKeyHandler.GetAPIKey)) // GET on /api_key/{api_name}
 
-	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md). They are served on a separate
-	// listener (NFH_ADMIN_ADDR), not on the public one: whatever the reverse proxy does with the public port, /admin
-	// is not on it. Publish the admin port only on a private address (LAN, WireGuard, or localhost for an SSH tunnel).
+	// Every route that needs an admin token is served on a separate listener (NFH_ADMIN_ADDR), not on the public one:
+	// whatever the reverse proxy does with the public port, these routes are not on it. Only the Cockpit (on the
+	// server's Docker network, itself reachable from WireGuard or the LAN only) should reach the admin port.
+	// All of them check the admin's expiry and revocation (adminHandler.Middleware); /data_source_list and
+	// /data_source_type did not before.
 	admin := func(h handlers.Handler) handlers.Handler { return adminAuth(adminHandler.Middleware(h)) }
 	adminRouter := newRouter()
+	adminRouter.Method("POST", "/app", admin(appHandler.Create))
+	adminRouter.Method("POST", "/cloud_feed_type", admin(cloudFeedTypeHandler.Create))
+	adminRouter.Method("POST", "/campaign", admin(campaignHandler.Create))
+	adminRouter.Method("POST", "/account", admin(accountHandler.Create))
+	adminRouter.Method("POST", "/device_type", admin(deviceTypeHandler.Create))
+	adminRouter.Method("POST", "/data_source_list", admin(dataSourceListHandler.Create))
+	adminRouter.Method("POST", "/data_source_type", admin(dataSourceTypeHandler.Create))
+	adminRouter.Method("POST", "/energy_query_type", admin(energyQueryTypeHandler.Create))
+	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md).
 	adminRouter.Route("/admin", func(r chi.Router) {
 		r.Method("GET", "/overview", admin(cockpitHandler.Overview))
 		r.Method("GET", "/campaigns/{campaign_id}/status", admin(cockpitHandler.CampaignStatus))
@@ -253,7 +250,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 const (
 	day                 = time.Hour * 24
 	defaultDownloadTime = "04h00s"
-	defaultAdminAddr    = ":8081"
+	defaultAdminAddr    = ":8082" // 127.0.0.1:8081 is the RPC listener of the admin CLI
 	defaultTimezone     = "Europe/Amsterdam"
 )
 

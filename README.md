@@ -36,14 +36,14 @@ services:
     build: .
     ports:
       - 8080:8080
-      - 127.0.0.1:8081:8081 # Admin routes (/admin): only on a private address, never through the public proxy.
+      - 127.0.0.1:8082:8082 # Routes that need an admin token: only on a private address, never through the public proxy.
     volumes:
       - ./data:/data
     environment:
       - NFH_DSN=root:needforheat@tcp(db:3306)/needforheat
       - NFH_BASE_URL=http://localhost:8080
       - NFH_DOWNLOAD_TIME=04h00m # 04:00 UTC
-      - NFH_ADMIN_ADDR=:8081 # Listen address of the admin routes (default :8081; empty: not served).
+      - NFH_ADMIN_ADDR=:8082 # Listen address of the routes that need an admin token (default :8082; empty: not served).
       - NFH_TIMEZONE=Europe/Amsterdam # Local time offset sent to devices with each upload (default Europe/Amsterdam).
     depends_on:
       - db
@@ -94,6 +94,8 @@ Admin "johndoe" created. Authorization token: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVC
 ```
 
 Copy the authorization token without any spaces.
+
+Routes that need an admin token (creating apps, campaigns, accounts, device types, data sources, and everything under `/admin`) are served on a separate port, **8082**, not on the public port 8080. Locally they are at http://localhost:8082/ (for example `curl -H "Authorization: Bearer <token>" -X POST http://localhost:8082/campaign ...`). On a server, port 8082 is not published at all: only the [Cockpit](https://github.com/energiegedrag-nl/energiegedrag-cockpit) reaches it over the Docker network, and researchers reach the Cockpit through WireGuard or the LAN. Give each admin their own token with an end date (`admin create -n <name> -e <yyyy-mm-dd>`); `admin delete` revokes it.
 
 When finished, type the `Ctrl + C` key in the first terminal. The container state is 
 preserved, and to restart, simply run `docker compose up --build` again.
