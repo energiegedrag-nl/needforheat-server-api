@@ -12,6 +12,8 @@ import (
 
 var (
 	ErrEmptyUpload = errors.New("no measurements in upload")
+	// ErrDeviceReleased is returned for an upload by a device that was released for another participant.
+	ErrDeviceReleased = errors.New("device was released")
 )
 
 type UploadService struct {
@@ -43,6 +45,17 @@ func (s *UploadService) Create(instanceID uint, instanceType upload.InstanceType
 	//For older firmwares
 	if instanceType == "" {
 		instanceType = upload.Device
+	}
+
+	// Nothing may land with the previous participant once the device was released.
+	if instanceType == upload.Device {
+		released, err := s.deviceRepo.IsReleased(instanceID)
+		if err != nil {
+			return upload.Upload{}, err
+		}
+		if released {
+			return upload.Upload{}, ErrDeviceReleased
+		}
 	}
 
 	upload := upload.MakeUpload(instanceID, instanceType, deviceTime, measurements)

@@ -2,6 +2,10 @@
 // ESP32 that was flashed in the lab, keyed by its MAC address, with its life cycle and history.
 //
 // Life cycle: flashed → assigned (to a participant account) → shipped → returned → erased → flashed again.
+// A returned device keeps its account: after a repair it can be shipped to the same participant again. To hand it
+// to another participant it is released: the device row the app activated is archived (renamed to
+// <name>~<yyyymmdd-hhmmss>, released_at set; its uploads stay with the previous participant), so the name is free
+// for the next account, and the device is in stock (flashed) again.
 // Whether a device is in use follows from the device table (a device with the same name was activated by the app);
 // the inventory does not duplicate that.
 package inventory
@@ -11,6 +15,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // Device states.
@@ -30,14 +35,19 @@ const (
 	EventReturn = "return"
 	EventErase  = "erase"
 	EventNote   = "note"
+	// EventRelease archives the activated device row and puts the device in stock for another participant.
+	EventRelease = "release"
 )
 
 var (
 	ErrInvalidMAC        = errors.New("invalid MAC address")
 	ErrUnknownEvent      = errors.New("unknown event")
 	ErrInvalidTransition = errors.New("event not allowed in this state")
-	// ErrStillAssigned is returned when a device that is assigned or shipped is flashed without force.
+	// ErrStillAssigned is returned when a device that is assigned, shipped or returned (still linked to its
+	// participant) is flashed without force.
 	ErrStillAssigned = errors.New("device is still assigned to a participant")
+	// ErrNoAccount is returned when a returned device without an account is shipped (nobody to send it back to).
+	ErrNoAccount = errors.New("device has no account to send it back to")
 )
 
 // Device is one physical device in the inventory.
@@ -83,7 +93,13 @@ type Flash struct {
 	Name            string `json:"name"`
 	Firmware        string `json:"firmware"`
 	FirmwareVersion string `json:"firmware_version"`
-	Force           bool   `json:"force"` // flash a device that is still assigned or shipped
+	Force           bool   `json:"force"` // flash a device that is still assigned, shipped or returned
+	// Release: the device goes to another participant. The device row the app activated is archived, the account
+	// link is removed. Implies Force.
+	Release bool `json:"release"`
+	// KeepAccount: repaired for the same participant. The account link stays and the device is returned (in the
+	// lab), ready to be shipped back; the participant pairs it again with the app. Implies Force.
+	KeepAccount bool `json:"keep_account"`
 }
 
 // Change is an event on an existing device.
@@ -126,7 +142,7 @@ func NameMatchesMAC(name, mac string) bool {
 func Next(state, event string, force bool) (string, error) {
 	switch event {
 	case EventFlash:
-		if (state == Assigned || state == Shipped) && !force {
+		if KeepsAccount(state) && !force {
 			return "", ErrStillAssigned
 		}
 		return Flashed, nil
@@ -135,7 +151,8 @@ func Next(state, event string, force bool) (string, error) {
 			return Assigned, nil
 		}
 	case EventShip:
-		if state == Assigned {
+		// From returned: back to the same participant after a repair.
+		if state == Assigned || state == Returned {
 			return Shipped, nil
 		}
 	case EventReturn:
@@ -144,6 +161,14 @@ func Next(state, event string, force bool) (string, error) {
 		}
 	case EventErase:
 		if state != "" {
+			return Erased, nil
+		}
+	case EventRelease:
+		// Only for a device in the lab: a shipped device is returned first.
+		switch state {
+		case Flashed, Assigned, Returned:
+			return Flashed, nil
+		case Erased:
 			return Erased, nil
 		}
 	case EventNote:
@@ -158,5 +183,11 @@ func Next(state, event string, force bool) (string, error) {
 
 // KeepsAccount reports whether a device in this state stays linked to its account.
 func KeepsAccount(state string) bool {
-	return state == Assigned || state == Shipped
+	return state == Assigned || state == Shipped || state == Returned
+}
+
+// ArchivedName is the name of a released device row: the original name plus the moment of release, so the
+// original name is free again and several releases of the same device stay apart.
+func ArchivedName(name string, at time.Time) string {
+	return name + "~" + at.UTC().Format("20060102-150405")
 }

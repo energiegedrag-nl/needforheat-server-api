@@ -62,6 +62,10 @@ func (h *UploadHandler) Create(w http.ResponseWriter, r *http.Request) error {
 		if errors.Is(err, services.ErrEmptyUpload) {
 			return NewHandlerError(err, "empty upload", http.StatusBadRequest)
 		}
+		if errors.Is(err, services.ErrDeviceReleased) {
+			// The firmware erases its pairing on 410 (needforheat-generic-firmware TODO reuse).
+			return NewHandlerError(err, "device released", http.StatusGone)
+		}
 
 		return NewHandlerError(err, "internal server error", http.StatusInternalServerError)
 	}
