@@ -2,10 +2,12 @@ package repositories
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/inventory"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -113,10 +115,19 @@ func TestInventoryReturnReleaseAndReflash(t *testing.T) {
 	// Repair for the same participant: flash keeps the account, then ship back.
 	keep := flash
 	keep.KeepAccount = true
+	keep.ActivationSecret = "81985529216486895" // full erase: a new secret (20-11: activation gave 403 without this)
 	d, err = repo.RecordFlash(keep, now.Add(2*time.Hour))
 	must(t, err)
 	if d.State != inventory.Returned || d.AccountID == nil || *d.AccountID != first.ID || d.InUse == nil {
 		t.Fatalf("after repair flash: %+v", d)
+	}
+	var renewed DeviceModel
+	must(t, db.First(&renewed, device.ID).Error)
+	if renewed.ActivatedAt != nil || bcrypt.CompareHashAndPassword([]byte(renewed.ActivationSecretHash), []byte(keep.ActivationSecret)) != nil {
+		t.Fatalf("activation secret not renewed: %+v", renewed)
+	}
+	if !strings.Contains(d.Events[0].Details, "new activation secret") {
+		t.Fatalf("details: %q", d.Events[0].Details)
 	}
 	d, err = repo.Apply(d.ID, inventory.Change{Event: inventory.EventShip}, now.Add(2*time.Hour))
 	must(t, err)
