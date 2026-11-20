@@ -204,6 +204,8 @@ func handleServe(cmd *cobra.Command, args []string) error {
 		r.Method("GET", "/inventory/mac/{mac}", admin(inventoryHandler.GetByMAC))
 		r.Method("GET", "/inventory/{device_id}", admin(inventoryHandler.Get))
 		r.Method("POST", "/inventory/{device_id}/events", admin(inventoryHandler.Apply))
+		// Release a device for another participant (TODO reuse), also when it is not in the inventory.
+		r.Method("POST", "/devices/{device_name}/release", admin(inventoryHandler.ReleaseDevice))
 		// Local vault (energiegedrag-cockpit docs/kluis.md): stored encrypted, the server cannot read it. Mail setting per campaign.
 		r.Method("GET", "/vaults/{vault_id}", admin(vaultHandler.Get))
 		r.Method("PUT", "/vaults/{vault_id}", admin(vaultHandler.Put))

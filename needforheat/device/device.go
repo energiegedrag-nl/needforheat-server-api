@@ -27,6 +27,9 @@ type Device struct {
 	AuthorizationToken   string                `json:"authorization_token,omitempty"`
 	Uploads              []upload.Upload       `json:"uploads,omitempty"`
 	LatestUpload         *needforheat.Time     `json:"latest_upload,omitempty"`
+	// ReleasedAt is set when the researcher released the device for another participant (Cockpit). The row is then
+	// archived under another name; uploads with its token get 410 Gone.
+	ReleasedAt *needforheat.Time `json:"released_at,omitempty"`
 }
 
 // Create a new Device.

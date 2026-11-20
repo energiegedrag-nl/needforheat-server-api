@@ -228,7 +228,8 @@ func (r *CockpitRepository) CampaignStatus(campaignID uint, now time.Time) (cock
 	}
 	inCampaign := r.db.Model(&AccountModel{}).Select("id").Where("campaign_id = ?", c.ID)
 	var devices []DeviceModel
-	if err := r.db.Where("account_id IN (?)", inCampaign).Order("id").Find(&devices).Error; err != nil {
+	// Released devices (handed to another participant) no longer count for the previous participant.
+	if err := r.db.Where("account_id IN (?) AND released_at IS NULL", inCampaign).Order("id").Find(&devices).Error; err != nil {
 		return out, err
 	}
 	var queries []EnergyQueryModel

@@ -29,6 +29,7 @@ type DeviceModel struct {
 	AccountModelID       uint `gorm:"column:account_id"`
 	ActivationSecretHash string
 	ActivatedAt          *needforheat.Time
+	ReleasedAt           *needforheat.Time
 	Uploads              []UploadModel `gorm:"polymorphic:Instance;"`
 }
 
@@ -53,6 +54,7 @@ func MakeDeviceModel(device device.Device) DeviceModel {
 		AccountModelID:       device.AccountID,
 		ActivationSecretHash: device.ActivationSecretHash,
 		ActivatedAt:          device.ActivatedAt,
+		ReleasedAt:           device.ReleasedAt,
 		Uploads:              uploadModels,
 	}
 }
@@ -72,6 +74,7 @@ func (m *DeviceModel) fromModel() device.Device {
 		AccountID:            m.AccountModelID,
 		ActivationSecretHash: m.ActivationSecretHash,
 		ActivatedAt:          m.ActivatedAt,
+		ReleasedAt:           m.ReleasedAt,
 		Uploads:              uploads,
 	}
 }
@@ -179,7 +182,9 @@ func (r *DeviceRepository) GetAllByAccount(accountID uint) ([]device.Device, err
 	var devices []device.Device
 	var deviceModels []DeviceModel
 
-	err := r.db.Where("account_id = ?", accountID).Preload("DeviceType").Find(&deviceModels).Error
+	// A released device stays with the account on the server (its uploads), but is no longer part of the
+	// participant's setup in the app.
+	err := r.db.Where("account_id = ? AND released_at IS NULL", accountID).Preload("DeviceType").Find(&deviceModels).Error
 	if err != nil {
 		return nil, err
 	}
@@ -206,4 +211,11 @@ func (r *DeviceRepository) Update(device device.Device) (device.Device, error) {
 func (r *DeviceRepository) Delete(device device.Device) error {
 	deviceModel := MakeDeviceModel(device)
 	return r.db.Delete(&deviceModel).Error
+}
+
+// IsReleased reports whether the device was released for another participant.
+func (r *DeviceRepository) IsReleased(id uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&DeviceModel{}).Where("id = ? AND released_at IS NOT NULL", id).Count(&count).Error
+	return count > 0, err
 }

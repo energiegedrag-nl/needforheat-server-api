@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
@@ -44,8 +45,14 @@ func (InventoryEventModel) TableName() string {
 	return "inventory_event"
 }
 
-// ErrUnknownAccount is returned when a device is assigned to an account that does not exist.
-var ErrUnknownAccount = errors.New("unknown account")
+var (
+	// ErrUnknownAccount is returned when a device is assigned to an account that does not exist.
+	ErrUnknownAccount = errors.New("unknown account")
+	// ErrNothingToRelease is returned when no active (not yet released) device has the name.
+	ErrNothingToRelease = errors.New("no active device with this name")
+	// ErrReleaseAndKeep is returned for a flash that asks both to release the device and to keep its account.
+	ErrReleaseAndKeep = errors.New("release and keep_account exclude each other")
+)
 
 type InventoryRepository struct {
 	db *gorm.DB
@@ -87,7 +94,7 @@ func (r *InventoryRepository) inUse(names []string) (map[string]*inventory.InUse
 	err := r.db.Table("device").
 		Select("device.name, device.account_id, account.campaign_id, device.activated_at").
 		Joins("JOIN account ON account.id = device.account_id").
-		Where("device.name IN ? AND device.deleted_at IS NULL", names).
+		Where("device.name IN ? AND device.deleted_at IS NULL AND device.released_at IS NULL", names).
 		Scan(&rows).Error
 	if err != nil {
 		return nil, err
@@ -168,8 +175,80 @@ func (r *InventoryRepository) GetByMAC(mac string) (inventory.Device, error) {
 	return r.get(r.db, "mac = ?", mac)
 }
 
+// releaseDevices archives the active device rows with this name (activated by the app): renamed to
+// inventory.ArchivedName, released_at set. Their uploads stay with their account; the name is free for the next
+// account. It returns a description for the history, empty when there was nothing to release.
+func releaseDevices(tx *gorm.DB, name string, now time.Time) (string, error) {
+	if name == "" {
+		return "", nil
+	}
+	var rows []DeviceModel
+	if err := tx.Where("name = ? AND released_at IS NULL", name).Find(&rows).Error; err != nil {
+		return "", err
+	}
+	details := ""
+	for _, d := range rows {
+		archived := inventory.ArchivedName(d.Name, now)
+		if err := tx.Model(&DeviceModel{}).Where("id = ?", d.ID).
+			Updates(map[string]any{"name": archived, "released_at": now}).Error; err != nil {
+			return "", err
+		}
+		details = joinDetails(details, fmt.Sprintf("device %s of account %d archived as %s", d.Name, d.AccountModelID, archived))
+	}
+	return details, nil
+}
+
+// ReleaseByName releases the active device row with this name, also when the device is not in the inventory
+// (flashed before the inventory existed, or with another tool). If the inventory knows the name, the release is
+// recorded there as well. It returns ErrNothingToRelease when no active device has this name.
+func (r *InventoryRepository) ReleaseByName(name string, details string, now time.Time) (string, error) {
+	var archived string
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var m InventoryDeviceModel
+		err := tx.Where("name = ?", name).First(&m).Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+		done, err := releaseDevices(tx, name, now)
+		if err != nil {
+			return err
+		}
+		if done == "" {
+			return ErrNothingToRelease
+		}
+		archived = done
+		if m.ID == 0 {
+			return nil
+		}
+		// The inventory follows if it can; a shipped device stays shipped (it is still with the participant).
+		if state, err := inventory.Next(m.State, inventory.EventRelease, false); err == nil {
+			m.State, m.AccountID = state, nil
+		}
+		m.UpdatedAt = now
+		if err := tx.Save(&m).Error; err != nil {
+			return err
+		}
+		return tx.Create(&InventoryEventModel{InventoryDeviceID: m.ID, At: now, Event: inventory.EventRelease, State: m.State,
+			Details: joinDetails(done, details)}).Error
+	})
+	return archived, err
+}
+
+func joinDetails(a, b string) string {
+	switch {
+	case a == "":
+		return b
+	case b == "":
+		return a
+	}
+	return a + "; " + b
+}
+
 // RecordFlash adds a device to the inventory or updates it after it was flashed. f.MAC must be normalized.
 func (r *InventoryRepository) RecordFlash(f inventory.Flash, now time.Time) (inventory.Device, error) {
+	if f.Release && f.KeepAccount {
+		return inventory.Device{}, ErrReleaseAndKeep
+	}
 	var id uint
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		var m InventoryDeviceModel
@@ -177,16 +256,35 @@ func (r *InventoryRepository) RecordFlash(f inventory.Flash, now time.Time) (inv
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
-		state, err := inventory.Next(m.State, inventory.EventFlash, f.Force)
+		state, err := inventory.Next(m.State, inventory.EventFlash, f.Force || f.Release || f.KeepAccount)
 		if err != nil {
 			return err
 		}
 		details := f.Firmware + " " + f.FirmwareVersion
-		if m.AccountID != nil {
+		var account *uint
+		switch {
+		case f.KeepAccount && m.AccountID != nil:
+			// Repaired for the same participant: back in the lab, still theirs.
+			state, account = inventory.Returned, m.AccountID
+			details += " (repair; stays with the same account)"
+		case f.Release:
+			names := []string{m.Name}
+			if f.Name != m.Name {
+				names = append(names, f.Name)
+			}
+			for _, name := range names {
+				done, err := releaseDevices(tx, name, now)
+				if err != nil {
+					return err
+				}
+				details = joinDetails(details, done)
+			}
+			details += " (released for another participant)"
+		case m.AccountID != nil:
 			details += " (was assigned to an account; link removed)"
 		}
 		m.MAC, m.Chip, m.DeviceType, m.Name = f.MAC, f.Chip, f.DeviceType, f.Name
-		m.Firmware, m.FirmwareVersion, m.State, m.AccountID = f.Firmware, f.FirmwareVersion, state, nil
+		m.Firmware, m.FirmwareVersion, m.State, m.AccountID = f.Firmware, f.FirmwareVersion, state, account
 		m.UpdatedAt = now
 		if m.ID == 0 {
 			m.CreatedAt = now
@@ -195,7 +293,7 @@ func (r *InventoryRepository) RecordFlash(f inventory.Flash, now time.Time) (inv
 			return err
 		}
 		id = m.ID
-		return tx.Create(&InventoryEventModel{InventoryDeviceID: m.ID, At: now, Event: inventory.EventFlash, State: state, Details: details}).Error
+		return tx.Create(&InventoryEventModel{InventoryDeviceID: m.ID, At: now, Event: inventory.EventFlash, State: state, AccountID: account, Details: details}).Error
 	})
 	if err != nil {
 		return inventory.Device{}, err
@@ -213,6 +311,19 @@ func (r *InventoryRepository) Apply(id uint, c inventory.Change, now time.Time) 
 		state, err := inventory.Next(m.State, c.Event, false)
 		if err != nil {
 			return err
+		}
+		details := c.Details
+		switch c.Event {
+		case inventory.EventShip:
+			if m.State == inventory.Returned && m.AccountID == nil {
+				return inventory.ErrNoAccount
+			}
+		case inventory.EventRelease:
+			done, err := releaseDevices(tx, m.Name, now)
+			if err != nil {
+				return err
+			}
+			details = joinDetails(done, details)
 		}
 		if c.Event == inventory.EventAssign {
 			if c.AccountID == nil {
@@ -238,7 +349,7 @@ func (r *InventoryRepository) Apply(id uint, c inventory.Change, now time.Time) 
 		if err := tx.Save(&m).Error; err != nil {
 			return err
 		}
-		return tx.Create(&InventoryEventModel{InventoryDeviceID: m.ID, At: now, Event: c.Event, State: state, AccountID: m.AccountID, Details: c.Details}).Error
+		return tx.Create(&InventoryEventModel{InventoryDeviceID: m.ID, At: now, Event: c.Event, State: state, AccountID: m.AccountID, Details: details}).Error
 	})
 	if err != nil {
 		return inventory.Device{}, err

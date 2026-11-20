@@ -3,6 +3,7 @@ package inventory
 import (
 	"errors"
 	"testing"
+	"time"
 )
 
 func TestNormalizeMAC(t *testing.T) {
@@ -32,6 +33,13 @@ func TestNameMatchesMAC(t *testing.T) {
 	}
 }
 
+func TestArchivedName(t *testing.T) {
+	at := time.Date(2026, 11, 20, 1, 2, 3, 0, time.FixedZone("CET", 3600))
+	if got := ArchivedName("FE2E-979798", at); got != "FE2E-979798~20261120-000203" {
+		t.Errorf("ArchivedName = %q", got)
+	}
+}
+
 func TestNext(t *testing.T) {
 	cases := []struct {
 		state, event string
@@ -49,6 +57,15 @@ func TestNext(t *testing.T) {
 		{Assigned, EventShip, false, Shipped, nil},
 		{Flashed, EventShip, false, "", ErrInvalidTransition},
 		{Shipped, EventReturn, false, Returned, nil},
+		{Returned, EventFlash, false, "", ErrStillAssigned},
+		{Returned, EventFlash, true, Flashed, nil},
+		{Returned, EventShip, false, Shipped, nil},
+		{Flashed, EventRelease, false, Flashed, nil},
+		{Assigned, EventRelease, false, Flashed, nil},
+		{Returned, EventRelease, false, Flashed, nil},
+		{Erased, EventRelease, false, Erased, nil},
+		{Shipped, EventRelease, false, "", ErrInvalidTransition},
+		{"", EventRelease, false, "", ErrInvalidTransition},
 		{Returned, EventErase, false, Erased, nil},
 		{"", EventErase, false, "", ErrInvalidTransition},
 		{Shipped, EventNote, false, Shipped, nil},
