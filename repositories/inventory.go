@@ -7,6 +7,7 @@ import (
 
 	"github.com/energiegedrag-nl/needforheat-server-api/needforheat"
 	"github.com/energiegedrag-nl/needforheat-server-api/needforheat/inventory"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -244,6 +245,42 @@ func joinDetails(a, b string) string {
 	return a + "; " + b
 }
 
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+// renewActivationSecret replaces the activation secret hash of the participant's active device row with this name
+// and clears activated_at, so the device activates again with the secret it got from a full erase. Rows of other
+// accounts and released rows are left alone. Without a secret nothing changes (the device kept its old one, or the
+// flash station did not see the QR code).
+func renewActivationSecret(tx *gorm.DB, name string, accountID uint, secret string) (string, error) {
+	if name == "" {
+		return "", nil
+	}
+	if secret == "" {
+		return "activation secret unchanged (no QR code from the flash station)", nil
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(secret), 12)
+	if err != nil {
+		return "", err
+	}
+	result := tx.Model(&DeviceModel{}).
+		Where("name = ? AND account_id = ? AND released_at IS NULL", name, accountID).
+		Updates(map[string]any{"activation_secret_hash": string(hash), "activated_at": nil})
+	if result.Error != nil {
+		return "", result.Error
+	}
+	if result.RowsAffected == 0 {
+		return "", nil // not paired yet: the app creates the row with the new secret
+	}
+	return fmt.Sprintf("device %s: new activation secret, pair again with the app", name), nil
+}
+
 // RecordFlash adds a device to the inventory or updates it after it was flashed. f.MAC must be normalized.
 func (r *InventoryRepository) RecordFlash(f inventory.Flash, now time.Time) (inventory.Device, error) {
 	if f.Release && f.KeepAccount {
@@ -267,6 +304,11 @@ func (r *InventoryRepository) RecordFlash(f inventory.Flash, now time.Time) (inv
 			// Repaired for the same participant: back in the lab, still theirs.
 			state, account = inventory.Returned, m.AccountID
 			details += " (repair; stays with the same account)"
+			done, err := renewActivationSecret(tx, firstNonEmpty(f.Name, m.Name), *m.AccountID, f.ActivationSecret)
+			if err != nil {
+				return err
+			}
+			details = joinDetails(details, done)
 		case f.Release:
 			names := []string{m.Name}
 			if f.Name != m.Name {

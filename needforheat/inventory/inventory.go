@@ -100,6 +100,11 @@ type Flash struct {
 	// KeepAccount: repaired for the same participant. The account link stays and the device is returned (in the
 	// lab), ready to be shipped back; the participant pairs it again with the app. Implies Force.
 	KeepAccount bool `json:"keep_account"`
+	// ActivationSecret: with KeepAccount, the PoP from the provisioning QR the device logged after this flash. A full
+	// erase gives the device a new secret; the server then replaces the hash on the participant's device row and
+	// clears activated_at, so the device can activate again. Without it the old hash stays and activation gives 403
+	// (20-11). Only the bcrypt hash is stored.
+	ActivationSecret string `json:"activation_secret,omitempty"`
 }
 
 // Change is an event on an existing device.
