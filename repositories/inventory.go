@@ -254,6 +254,22 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
+// activeDeviceAccount returns the account of the active (not released) device row with this name, or nil.
+func activeDeviceAccount(tx *gorm.DB, name string) (*uint, error) {
+	if name == "" {
+		return nil, nil
+	}
+	var rows []DeviceModel
+	if err := tx.Where("name = ? AND released_at IS NULL", name).Limit(1).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	id := rows[0].AccountModelID
+	return &id, nil
+}
+
 // renewActivationSecret replaces the activation secret hash of the participant's active device row with this name
 // and clears activated_at, so the device activates again with the secret it got from a full erase. Rows of other
 // accounts and released rows are left alone. Without a secret nothing changes (the device kept its old one, or the
@@ -299,12 +315,22 @@ func (r *InventoryRepository) RecordFlash(f inventory.Flash, now time.Time) (inv
 		}
 		details := f.Firmware + " " + f.FirmwareVersion
 		var account *uint
+		// The participant of a repair: the inventory link, or else the account of the active device row the app
+		// created (a device paired with the app without an inventory assignment; the flash station treats that as
+		// linked too). Without this fallback keep_account was ignored and the old activation secret stayed (21-11).
+		keepFor := m.AccountID
+		if f.KeepAccount && keepFor == nil {
+			keepFor, err = activeDeviceAccount(tx, firstNonEmpty(f.Name, m.Name))
+			if err != nil {
+				return err
+			}
+		}
 		switch {
-		case f.KeepAccount && m.AccountID != nil:
+		case f.KeepAccount && keepFor != nil:
 			// Repaired for the same participant: back in the lab, still theirs.
-			state, account = inventory.Returned, m.AccountID
+			state, account = inventory.Returned, keepFor
 			details += " (repair; stays with the same account)"
-			done, err := renewActivationSecret(tx, firstNonEmpty(f.Name, m.Name), *m.AccountID, f.ActivationSecret)
+			done, err := renewActivationSecret(tx, firstNonEmpty(f.Name, m.Name), *keepFor, f.ActivationSecret)
 			if err != nil {
 				return err
 			}

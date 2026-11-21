@@ -193,3 +193,53 @@ func TestInventoryReturnReleaseAndReflash(t *testing.T) {
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// A device paired with the app without an inventory assignment: the flash station sees it as linked (in_use), so
+// "back to the same participant" must use the account of the device row (21-11: keep_account was ignored, the old
+// activation secret stayed and activation gave 403).
+func TestKeepAccountForDevicePairedWithoutInventory(t *testing.T) {
+	db := testDB(t)
+	must(t, db.AutoMigrate(&InventoryDeviceModel{}, &InventoryEventModel{}))
+	repo := NewInventoryRepository(db)
+	now := time.Date(2026, 11, 21, 0, 25, 0, 0, time.UTC)
+
+	app := AppModel{Name: "NeedForHeat", ProvisioningURLTemplate: "https://energiegedrag.nl/invite/<account_activation_token>"}
+	must(t, db.Create(&app).Error)
+	campaign := CampaignModel{Name: "Proef", AppModelID: app.ID, InfoURL: "https://energiegedrag.nl/proef"}
+	must(t, db.Omit("App").Create(&campaign).Error)
+	participant := AccountModel{CampaignModelID: campaign.ID}
+	must(t, db.Omit("Campaign").Create(&participant).Error)
+	deviceType := DeviceTypeModel{Name: "LRM"}
+	must(t, db.Create(&deviceType).Error)
+
+	flash := inventory.Flash{MAC: "AA:BB:CC:97:97:98", Chip: "ESP32", DeviceType: "LRM", Name: "FE2E-979798",
+		Firmware: "needforheat-living-room-module-firmware", FirmwareVersion: "v1.2.0-rc.15"}
+	_, err := repo.RecordFlash(flash, now)
+	must(t, err)
+	// Paired with the app: a device row on the participant's account, no inventory assignment.
+	device := DeviceModel{Name: "FE2E-979798", DeviceTypeModelID: deviceType.ID, AccountModelID: participant.ID, ActivatedAt: ntime(now)}
+	must(t, db.Omit("DeviceType").Create(&device).Error)
+
+	keep := flash
+	keep.KeepAccount = true
+	keep.ActivationSecret = "81985529216486895"
+	d, err := repo.RecordFlash(keep, now.Add(time.Hour))
+	must(t, err)
+	if d.State != inventory.Returned || d.AccountID == nil || *d.AccountID != participant.ID {
+		t.Fatalf("after repair flash: %+v", d)
+	}
+	var renewed DeviceModel
+	must(t, db.First(&renewed, device.ID).Error)
+	if renewed.ActivatedAt != nil || bcrypt.CompareHashAndPassword([]byte(renewed.ActivationSecretHash), []byte(keep.ActivationSecret)) != nil {
+		t.Fatalf("activation secret not renewed: %+v", renewed)
+	}
+
+	// Without any participant keep_account changes nothing (a plain flash).
+	other := inventory.Flash{MAC: "AA:BB:CC:00:00:01", Chip: "ESP32", DeviceType: "LRM", Name: "FE2E-000001",
+		Firmware: "x", FirmwareVersion: "v1", KeepAccount: true, ActivationSecret: "1"}
+	d, err = repo.RecordFlash(other, now)
+	must(t, err)
+	if d.State != inventory.Flashed || d.AccountID != nil {
+		t.Fatalf("keep without participant: %+v", d)
+	}
+}
