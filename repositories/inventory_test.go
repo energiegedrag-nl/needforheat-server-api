@@ -243,3 +243,42 @@ func TestKeepAccountForDevicePairedWithoutInventory(t *testing.T) {
 		t.Fatalf("keep without participant: %+v", d)
 	}
 }
+
+// Flashing without a full erase: the device logs the same QR code (same secret) and keeps its token. Then the server
+// must not clear activated_at (22-11: the app showed the module as not paired).
+func TestKeepAccountSameSecretChangesNothing(t *testing.T) {
+	db := testDB(t)
+	must(t, db.AutoMigrate(&InventoryDeviceModel{}, &InventoryEventModel{}))
+	repo := NewInventoryRepository(db)
+	now := time.Date(2026, 11, 22, 0, 5, 0, 0, time.UTC)
+
+	app := AppModel{Name: "NeedForHeat", ProvisioningURLTemplate: "https://energiegedrag.nl/invite/<account_activation_token>"}
+	must(t, db.Create(&app).Error)
+	campaign := CampaignModel{Name: "Proef", AppModelID: app.ID, InfoURL: "https://energiegedrag.nl/proef"}
+	must(t, db.Omit("App").Create(&campaign).Error)
+	participant := AccountModel{CampaignModelID: campaign.ID}
+	must(t, db.Omit("Campaign").Create(&participant).Error)
+	deviceType := DeviceTypeModel{Name: "LRM"}
+	must(t, db.Create(&deviceType).Error)
+
+	secret := "81985529216486895"
+	hash, err := bcrypt.GenerateFromPassword([]byte(secret), 4)
+	must(t, err)
+	device := DeviceModel{Name: "FE2E-979798", DeviceTypeModelID: deviceType.ID, AccountModelID: participant.ID,
+		ActivatedAt: ntime(now), ActivationSecretHash: string(hash)}
+	must(t, db.Omit("DeviceType").Create(&device).Error)
+
+	flash := inventory.Flash{MAC: "AA:BB:CC:97:97:98", Chip: "ESP32", DeviceType: "LRM", Name: "FE2E-979798",
+		Firmware: "needforheat-living-room-module-firmware", FirmwareVersion: "v1.2.0-rc.18",
+		KeepAccount: true, ActivationSecret: secret}
+	d, err := repo.RecordFlash(flash, now.Add(time.Hour))
+	must(t, err)
+	var after DeviceModel
+	must(t, db.First(&after, device.ID).Error)
+	if after.ActivatedAt == nil || after.ActivationSecretHash != string(hash) {
+		t.Fatalf("same secret changed the device row: %+v", after)
+	}
+	if !strings.Contains(d.Events[0].Details, "unchanged") {
+		t.Fatalf("details: %q", d.Events[0].Details)
+	}
+}

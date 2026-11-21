@@ -281,6 +281,19 @@ func renewActivationSecret(tx *gorm.DB, name string, accountID uint, secret stri
 	if secret == "" {
 		return "activation secret unchanged (no QR code from the flash station)", nil
 	}
+	// The device logs its QR code at every boot, also without a full erase: then the secret is the same and the device
+	// keeps its token and will not activate again, so nothing may change (22-11: activated_at was cleared, the app
+	// showed the module as not paired).
+	var rows []DeviceModel
+	if err := tx.Where("name = ? AND account_id = ? AND released_at IS NULL", name, accountID).Find(&rows).Error; err != nil {
+		return "", err
+	}
+	if len(rows) == 0 {
+		return "", nil // not paired yet: the app creates the row with the new secret
+	}
+	if bcrypt.CompareHashAndPassword([]byte(rows[0].ActivationSecretHash), []byte(secret)) == nil {
+		return "activation secret unchanged (same secret, no full erase)", nil
+	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(secret), 12)
 	if err != nil {
 		return "", err
