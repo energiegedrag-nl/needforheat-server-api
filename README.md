@@ -145,6 +145,20 @@ There are currently three types of tokens:
 - Account: Used by an account to manage its resources.
 - Device: Used by a measurement device to upload measurements.
 
+### Display names of properties
+Apps show a property (such as `heat_tr_building_cond__W_K_1`) by its display name in the user's
+language; the unit comes from the property name. A label with `campaign_id` 0 (or left out) is the
+default, a label for a campaign overrides it there; an empty label removes one. Set them on the
+admin port:
+```shell
+curl -H "Authorization: Bearer <admin token>" -X PUT http://localhost:8082/property_labels -d '[
+  {"property": "heat_tr_building_cond__W_K_1", "language": "nl-NL", "label": "Warmteverlies (H)"},
+  {"property": "heat_tr_building_cond__W_K_1", "language": "en-US", "label": "Heat loss (H)"}
+]'
+```
+An account reads them with `GET /property_labels?language=nl-NL` (default: the campaign's
+language): `{"language": "nl-NL", "labels": {"heat_tr_building_cond__W_K_1": "Warmteverlies (H)"}}`.
+
 ### Managing admins and cloudfeeds
 When the container is running, lookup it's name.
 

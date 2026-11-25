@@ -131,6 +131,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	cockpitHandler := handlers.NewCockpitHandler(repositories.NewCockpitRepository(db), accountService)
 	inventoryHandler := handlers.NewInventoryHandler(repositories.NewInventoryRepository(db))
 	vaultHandler := handlers.NewVaultHandler(repositories.NewVaultRepository(db))
+	propertyLabelHandler := handlers.NewPropertyLabelHandler(repositories.NewPropertyLabelRepository(db), accountService)
 
 	go cloudFeedService.RefreshTokensInBackground(ctx, preRenewalDuration)
 	go cloudFeedService.DownloadInBackground(ctx, config.downloadStartTime)
@@ -176,6 +177,8 @@ func handleServe(cmd *cobra.Command, args []string) error {
 
 	r.Method("GET", "/api_key/{api_name}", accountAuth(apiKeyHandler.GetAPIKey)) // GET on /api_key/{api_name}
 
+	r.Method("GET", "/property_labels", accountAuth(propertyLabelHandler.ForAccount)) // GET on /property_labels?language=nl-NL
+
 	// Every route that needs an admin token is served on a separate listener (NFH_ADMIN_ADDR), not on the public one:
 	// whatever the reverse proxy does with the public port, these routes are not on it. Only the Cockpit (on the
 	// server's Docker network, itself reachable from WireGuard or the LAN only) should reach the admin port.
@@ -191,6 +194,7 @@ func handleServe(cmd *cobra.Command, args []string) error {
 	adminRouter.Method("POST", "/data_source_list", admin(dataSourceListHandler.Create))
 	adminRouter.Method("POST", "/data_source_type", admin(dataSourceTypeHandler.Create))
 	adminRouter.Method("POST", "/energy_query_type", admin(energyQueryTypeHandler.Create))
+	adminRouter.Method("PUT", "/property_labels", admin(propertyLabelHandler.Set))
 	// Routes for the NeedForHeat Cockpit (energiegedrag-cockpit docs/ontwerp.md).
 	adminRouter.Route("/admin", func(r chi.Router) {
 		r.Method("GET", "/overview", admin(cockpitHandler.Overview))
