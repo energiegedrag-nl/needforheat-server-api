@@ -45,7 +45,7 @@ func NewDatabaseConnectionAndMigrate(ctx context.Context, dsn string) (db *gorm.
 	for {
 		db, err = NewDatabaseConnection(dsn)
 		if err == nil {
-			return db, db.AutoMigrate(
+			err = db.AutoMigrate(
 				&AppModel{},
 				&CloudFeedTypeModel{},
 				&DataSourceListModel{},
@@ -67,6 +67,10 @@ func NewDatabaseConnectionAndMigrate(ctx context.Context, dsn string) (db *gorm.
 				&VaultBlobModel{},
 				&CampaignMailModel{},
 			)
+			if err != nil {
+				return db, err
+			}
+			return db, repairEnergyQueryUploadTimes(db)
 		}
 
 		select {
@@ -75,4 +79,22 @@ func NewDatabaseConnectionAndMigrate(ctx context.Context, dsn string) (db *gorm.
 			return // Return with the database and error.
 		}
 	}
+}
+
+// Uploads of energy queries were stored without a server time (before MakeEnergyQuery set it):
+// give them the activation time of their energy query, the moment they were received. Runs on
+// every start; it changes nothing once they are repaired, and a failure only gives a warning.
+func repairEnergyQueryUploadTimes(db *gorm.DB) error {
+	result := db.Exec(`UPDATE upload u JOIN energy_query eq ON u.instance_id = eq.id
+		SET u.server_time = eq.activated_at
+		WHERE u.instance_type = 'energy_query' AND eq.activated_at IS NOT NULL
+		AND (u.server_time IS NULL OR u.server_time < '1971-01-01')`)
+	if result.Error != nil {
+		logrus.WithError(result.Error).Warn("could not set the server time of energy-query uploads")
+		return nil
+	}
+	if result.RowsAffected > 0 {
+		logrus.Infof("set the server time of %d energy-query uploads", result.RowsAffected)
+	}
+	return nil
 }

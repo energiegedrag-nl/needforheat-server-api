@@ -18,9 +18,17 @@ type EnergyQuery struct {
 }
 
 // Create a new EnergyQuery, this should be with uploads
+//
+// The uploads come from the app as JSON, so the server sets what is its own: the server time
+// (the same moment as the activation), the instance type and the number of measurements.
 func MakeEnergyQuery(energyQueryType energyquerytype.EnergyQueryType, accountID uint, uploads []upload.Upload) EnergyQuery {
 	now := time.Now().Unix()
 	activatedAt := needforheat.Time(time.Unix(now, 0))
+	for i := range uploads {
+		uploads[i].ServerTime = needforheat.Time(time.Unix(now, 0).UTC())
+		uploads[i].InstanceType = upload.EnergyQuery
+		uploads[i].Size = len(uploads[i].Measurements)
+	}
 	return EnergyQuery{
 		EnergyQueryType: energyQueryType,
 		AccountID:       accountID,
