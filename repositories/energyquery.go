@@ -72,7 +72,15 @@ func (m *EnergyQueryModel) fromModel() energyquery.EnergyQuery {
 
 func (r *EnergyQueryRepository) Find(energyQuery energyquery.EnergyQuery) (energyquery.EnergyQuery, error) {
 	EnergyQueryModel := MakeEnergyQueryModel(energyQuery)
-	err := r.db.Preload("EnergyQueryType").Preload("Uploads").Where(&EnergyQueryModel).First(&EnergyQueryModel).Error
+	query := r.db.Preload("EnergyQueryType").Preload("Uploads")
+	// A type given by its name only: filter on that name. The struct condition below ignores the
+	// association, so without this any energy query of the account matched (GET
+	// /energy_query/building-profile gave the weather location when that one was older).
+	if variety := energyQuery.EnergyQueryType.EnergyQueryVariety; EnergyQueryModel.EnergyQueryTypeModelID == 0 && variety != "" {
+		query = query.Where("energy_query_type_id IN (?)",
+			r.db.Model(&EnergyQueryTypeModel{}).Select("id").Where("energy_query_variety = ?", variety))
+	}
+	err := query.Where(&EnergyQueryModel).First(&EnergyQueryModel).Error
 	return EnergyQueryModel.fromModel(), err
 }
 
